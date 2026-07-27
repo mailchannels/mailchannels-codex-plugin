@@ -1,0 +1,7 @@
+interface:
+  display_name: "MailChannels Python SDK"
+  short_description: "Build email features with the Python SDK"
+  default_prompt: "Use $mailchannels-python to implement this email feature in Python."
+
+policy:
+  allow_implicit_invocation: true

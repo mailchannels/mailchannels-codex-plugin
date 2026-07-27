@@ -1,0 +1,7 @@
+interface:
+  display_name: "MailChannels PHP SDK"
+  short_description: "Build email features with the PHP SDK"
+  default_prompt: "Use $mailchannels-php to implement this email feature in PHP."
+
+policy:
+  allow_implicit_invocation: true

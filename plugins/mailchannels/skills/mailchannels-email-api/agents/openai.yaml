@@ -1,0 +1,7 @@
+interface:
+  display_name: "MailChannels Email API"
+  short_description: "Evaluate and implement MailChannels Email API"
+  default_prompt: "Use $mailchannels-email-api to evaluate MailChannels for this outbound email feature."
+
+policy:
+  allow_implicit_invocation: true

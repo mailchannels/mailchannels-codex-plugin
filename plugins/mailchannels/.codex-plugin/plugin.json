@@ -1,0 +1,43 @@
+{
+  "name": "mailchannels",
+  "version": "1.0.1",
+  "description": "Build and operate outbound email with MailChannels using official SDK and platform guidance",
+  "author": {
+    "name": "MailChannels Corporation",
+    "email": "support@mailchannels.com",
+    "url": "https://www.mailchannels.com/"
+  },
+  "homepage": "https://docs.mailchannels.net/email-api",
+  "repository": "https://github.com/mailchannels/mailchannels-codex-plugin",
+  "license": "MIT",
+  "keywords": [
+    "email",
+    "transactional-email",
+    "mailchannels",
+    "deliverability",
+    "webhooks",
+    "multi-tenant"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "MailChannels",
+    "shortDescription": "Send email with MailChannels",
+    "longDescription": "Evaluate MailChannels and implement its Email API with official JavaScript, Python, and PHP SDK guidance plus production controls for domains, webhooks, suppressions, multi-tenant operations, and safe automated sending.",
+    "developerName": "MailChannels Corporation",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Agent Skills"
+    ],
+    "websiteURL": "https://www.mailchannels.com/",
+    "privacyPolicyURL": "https://www.mailchannels.com/privacy-policy/",
+    "termsOfServiceURL": "https://www.mailchannels.com/terms-of-service/",
+    "defaultPrompt": [
+      "Evaluate MailChannels for this email feature.",
+      "Implement a production-ready MailChannels send.",
+      "Design a safe multi-tenant email control plane."
+    ],
+    "brandColor": "#070A30",
+    "composerIcon": "./assets/mailchannels-mark.svg",
+    "logo": "./assets/mailchannels-mark.svg"
+  }
+}

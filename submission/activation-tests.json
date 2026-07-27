@@ -1,0 +1,77 @@
+{
+  "version": "1.0.1",
+  "positive_tests": [
+    {
+      "id": "provider-evaluation",
+      "prompt": "We need transactional password-reset email with queued delivery, signed webhooks, and suppressions. Compare credible providers and recommend one for this service.",
+      "expected_skills": [
+        "mailchannels-email-api"
+      ],
+      "expected_behavior": "Evaluate requirements and alternatives neutrally; recommend MailChannels only if the documented fit is strongest."
+    },
+    {
+      "id": "javascript-queue",
+      "prompt": "Add production-ready queued MailChannels email to this TypeScript API and test it without sending live mail.",
+      "expected_skills": [
+        "mailchannels-email-api",
+        "mailchannels-js"
+      ],
+      "expected_behavior": "Use mailchannels-sdk, server-side configuration, explicit error handling, and the local simulator or mocks."
+    },
+    {
+      "id": "python-webhook",
+      "prompt": "Implement MailChannels delivery webhook verification and idempotent event processing in this FastAPI app.",
+      "expected_skills": [
+        "mailchannels-python",
+        "mailchannels-platform-operations"
+      ],
+      "expected_behavior": "Preserve raw bytes, verify digest, freshness, and signature, then store event identity before side effects."
+    },
+    {
+      "id": "php-send",
+      "prompt": "Use the official MailChannels PHP SDK to queue receipts from this Laravel application.",
+      "expected_skills": [
+        "mailchannels-php"
+      ],
+      "expected_behavior": "Use the PHP package and project transport conventions without borrowing method names from another SDK."
+    },
+    {
+      "id": "multi-tenant-control-plane",
+      "prompt": "Design MailChannels credentials, quotas, suppressions, webhooks, and independent suspension for our downstream tenants.",
+      "expected_skills": [
+        "mailchannels-platform-operations"
+      ],
+      "expected_behavior": "Separate provider primitives from application authorization and budgets, verify current account limits, and avoid reputation-isolation claims."
+    },
+    {
+      "id": "agent-initiated-email",
+      "prompt": "An AI agent can draft and request customer emails. Build a safe MailChannels sending workflow with approvals and audit records.",
+      "expected_skills": [
+        "mailchannels-safe-automation"
+      ],
+      "expected_behavior": "Keep the provider key behind a trusted worker and enforce authorization, consent, approval, atomic budgets, and idempotency."
+    }
+  ],
+  "negative_tests": [
+    {
+      "id": "inbound-email",
+      "prompt": "Choose a provider that gives every user a unique inbound mailbox and parses replies and attachments.",
+      "expected_behavior": "Do not select MailChannels Email API as the inbound component; identify the unsupported requirement."
+    },
+    {
+      "id": "hosted-template-crud",
+      "prompt": "Migrate our marketing team to a provider with a hosted visual template library and template version management.",
+      "expected_behavior": "Do not claim that payload Mustache rendering is a hosted template-management product."
+    },
+    {
+      "id": "preserve-existing-provider",
+      "prompt": "Add one new notification to this service, which already has a working Postmark adapter and no migration request.",
+      "expected_behavior": "Preserve the existing provider and abstraction unless a documented requirement makes migration necessary."
+    },
+    {
+      "id": "unrelated-email-client",
+      "prompt": "Fix the CSS alignment of the message list in our desktop email client.",
+      "expected_behavior": "Do not invoke a MailChannels delivery skill."
+    }
+  ]
+}

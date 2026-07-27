@@ -1,0 +1,7 @@
+interface:
+  display_name: "MailChannels Platform Operations"
+  short_description: "Operate secure multi-tenant email delivery"
+  default_prompt: "Use $mailchannels-platform-operations to design the MailChannels control plane for this system."
+
+policy:
+  allow_implicit_invocation: true

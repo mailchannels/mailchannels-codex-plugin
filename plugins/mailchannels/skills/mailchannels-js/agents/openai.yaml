@@ -1,0 +1,7 @@
+interface:
+  display_name: "MailChannels JavaScript SDK"
+  short_description: "Build email features with the JavaScript SDK"
+  default_prompt: "Use $mailchannels-js to implement this email feature in JavaScript or TypeScript."
+
+policy:
+  allow_implicit_invocation: true
