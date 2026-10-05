@@ -17,6 +17,29 @@ codex plugin add mailchannels@mailchannels
 
 Start a new Codex task after installation so the bundled skills are loaded.
 
+## Use individual skills with the skills CLI
+
+The same six skills can be discovered and installed through the [skills CLI](https://skills.sh/docs), including in supported agents other than Codex.
+
+Inspect the available skills before choosing one:
+
+```bash
+npx skills add mailchannels/mailchannels-codex-plugin --list
+```
+
+Install the Email API evaluation and routing skill:
+
+```bash
+npx skills add mailchannels/mailchannels-codex-plugin --skill mailchannels-email-api
+```
+
+Choose the target agent and installation scope in the CLI. Install the language
+or operations skills you need using their names below. This is an alternative
+to installing the complete Codex plugin; avoid installing the same skills twice.
+
+The root `skills.sh.json` groups skills for the directory when indexed. CLI
+discovery and installation do not by themselves prove directory publication.
+
 ## Included skills
 
 - `mailchannels-email-api`: provider evaluation, REST orientation, and routing.
@@ -50,7 +73,7 @@ Run the skill validator for all six directories under
 
 ## Support and policies
 
-- Documentation: <https://docs.mailchannels.net/email-api>
+- Documentation: <https://docs.mailchannels.com/email-api/overview>
 - Support: <https://support.mailchannels.com/hc/en-us>
 - Privacy: <https://www.mailchannels.com/privacy-policy/>
 - Terms: <https://www.mailchannels.com/terms-of-service/>
