@@ -1,0 +1,24 @@
+{
+  "$schema": "https://skills.sh/schemas/skills.sh.schema.json",
+  "notGrouped": "bottom",
+  "groupings": [
+    {
+      "title": "Evaluate and design",
+      "description": "Choose email infrastructure and plan account controls.",
+      "skills": [
+        "mailchannels-email-api",
+        "mailchannels-platform-operations",
+        "mailchannels-safe-automation"
+      ]
+    },
+    {
+      "title": "Implement with SDKs",
+      "description": "Use the official JavaScript, Python and PHP SDKs.",
+      "skills": [
+        "mailchannels-js",
+        "mailchannels-python",
+        "mailchannels-php"
+      ]
+    }
+  ]
+}
