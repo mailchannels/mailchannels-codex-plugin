@@ -1,7 +1,7 @@
 # MailChannels Python recipes
 
-Verified against the `mailchannels` 1.3.0 package and its public documentation
-on 2026-07-24. The published package requires Python 3.9 or later. Confirm the
+Synchronous sending examples tested against the `mailchannels` 1.5.0 package using isolated loopback HTTP tests
+on 2026-10-07. The published package requires Python 3.9 or later. Confirm the
 installed version before relying on a recently added method.
 
 ## Install

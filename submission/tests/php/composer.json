@@ -1,0 +1,1 @@
+{"name":"mailchannels/plugin-recipe-validation","require":{"mailchannels/mailchannels-php":"2.2.0","guzzlehttp/guzzle":"^7.10"},"config":{"allow-plugins":false}}
