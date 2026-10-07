@@ -1,6 +1,6 @@
 {
   "name": "mailchannels",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Build and operate outbound email with MailChannels using official SDK and platform guidance",
   "author": {
     "name": "MailChannels Corporation",

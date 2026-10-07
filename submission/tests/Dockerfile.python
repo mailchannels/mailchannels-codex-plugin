@@ -1,0 +1,5 @@
+FROM python:3.13-slim
+RUN pip install --no-cache-dir mailchannels==1.5.0 pytest==9.1.1
+WORKDIR /tests
+COPY test_python_recipes.py /tests/test_python_recipes.py
+CMD ["python", "-m", "pytest", "-q", "test_python_recipes.py"]
