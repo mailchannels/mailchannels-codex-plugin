@@ -1,7 +1,7 @@
 # MailChannels PHP recipes
 
-Verified against `mailchannels/mailchannels-php` 1.3.0 and its public package
-metadata on 2026-07-24. The package requires PHP 8.1 or later and PSR-18,
+Synchronous sending examples tested against `mailchannels/mailchannels-php` 2.2.0 using isolated loopback
+HTTP tests on 2026-10-07. The package requires PHP 8.2 or later and PSR-18,
 PSR-17, and PSR-7 implementations. Confirm the installed version before relying
 on a recently added method.
 
@@ -51,7 +51,7 @@ $message = new EmailParams(
     personalizations: [
         new Personalization(to: ['recipient@example.net']),
     ],
-    content: [Content::text('Thank you.')],
+    content: [Content::plain('Thank you.')],
     transactional: true,
 );
 
