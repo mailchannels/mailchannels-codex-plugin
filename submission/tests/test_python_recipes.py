@@ -2,6 +2,7 @@
 import asyncio
 import json
 import re
+import socket
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -20,12 +21,23 @@ SYNC_BLOCKS = [BLOCKS[0], BLOCKS[1], BLOCKS[3]]
 @pytest.fixture
 def local_api(monkeypatch):
     calls = []
-    state = {'status': 202}
+    state = {'status': 202, 'mode': 'respond',
+             'received': threading.Event(), 'release': threading.Event()}
 
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):
             calls.append({'path': self.path, 'key': self.headers.get('X-Api-Key'),
                           'body': json.loads(self.rfile.read(int(self.headers['Content-Length'])))})
+            state['received'].set()
+            if state['mode'] == 'drop':
+                self.connection.shutdown(socket.SHUT_RDWR)
+                self.connection.close()
+                return
+            if state['mode'] == 'hold':
+                # The request is fully received but no acceptance response exists.
+                # Release only during fixture teardown; never send after cancellation.
+                state['release'].wait(timeout=5)
+                return
             self.send_response(state['status'])
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
@@ -45,6 +57,7 @@ def local_api(monkeypatch):
     try:
         yield calls, state
     finally:
+        state['release'].set()
         server.shutdown()
         server.server_close()
         thread.join()
@@ -156,3 +169,38 @@ def test_concurrent_async_tenants_own_separate_closed_pools(local_api, owned_poo
     assert len(owned_pools) == 2 and all(pool.is_closed for pool in owned_pools)
     execute(0)
     assert calls[-1]['key'] == 'fixture-parent-key'
+
+
+@pytest.mark.parametrize('failure', ['cancel', 'deadline', 'drop'])
+def test_async_post_receipt_fault_closes_pool_without_retry(local_api, owned_pools, failure):
+    import httpx
+
+    calls, state = local_api
+    state['mode'] = 'drop' if failure == 'drop' else 'hold'
+
+    async def fail_after_receipt():
+        task = asyncio.create_task(async_recipe()(async_message(), 'fixture-fault-key'))
+        try:
+            assert await asyncio.to_thread(state['received'].wait, 3), 'Server did not receive request'
+            if failure == 'cancel':
+                task.cancel()
+                with pytest.raises(asyncio.CancelledError):
+                    await task
+            elif failure == 'deadline':
+                with pytest.raises(TimeoutError):
+                    await asyncio.wait_for(task, timeout=0.05)
+            else:
+                with pytest.raises(httpx.RemoteProtocolError):
+                    await task
+            assert task.done()
+        finally:
+            # Clean up even if a preceding assertion fails; do not leak live tasks.
+            if not task.done():
+                task.cancel()
+            await asyncio.gather(task, return_exceptions=True)
+
+    asyncio.run(fail_after_receipt())
+    assert len(calls) == len(owned_pools) == 1
+    assert calls[0]['key'] == 'fixture-fault-key'
+    assert calls[0]['path'] == '/tx/v1/send-async'
+    assert owned_pools[0].is_closed
