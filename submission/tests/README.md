@@ -29,7 +29,15 @@ values. Python additionally executes the exact async function with real publishe
 SDK1.5.0/HTTPX0.28.1 loopback requests: success and429 each close the pool with
 one request/no retry; concurrent tenants own distinct closed pools and preserve
 the parent's module configuration. The image includes the async extra. These
-checks do not cover cancellation, deadline/connection faults, application event
+Three additional cases first confirm full server receipt, then cancel the task,
+apply an application deadline while awaiting a withheld response, or drop the
+connection without response headers. Each propagates the expected error, closes
+the actual HTTPX pool and makes exactly one request. The server never reports
+acceptance in these cases: cleanup is not proof that a provider did not accept a
+message. Reconcile the uncertain outcome before any resend. Removing async
+context ownership fails all three pool-closure assertions. There are 13 Python
+cases in total. These checks do not cover repeated cancellation during cleanup,
+SDK transport-timeout configuration, every connection fault, application event
 idempotency or longer-lived service startup/shutdown.
 These are recipe tests, not installed-plugin semantic activation,
 webhook verification, production delivery or portal review.
