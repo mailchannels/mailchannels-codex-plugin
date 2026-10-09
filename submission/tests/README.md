@@ -25,6 +25,12 @@ Python SDK 1.5.0: three success cases, three rate-limit rejection cases (one att
 each), and parent/tenant credential separation. PHP SDK 2.2.0: array and typed queue
 payloads, rejection without retries, and missing-key rejection before HTTP.
 Both verify serialized sender/recipient, endpoint, and authentication with fixture
-values. These are synchronous recipe tests, not installed-plugin activation,
-webhook verification, asynchronous lifecycle, production delivery or portal review.
+values. Python additionally executes the exact async function with real published
+SDK1.5.0/HTTPX0.28.1 loopback requests: success and429 each close the pool with
+one request/no retry; concurrent tenants own distinct closed pools and preserve
+the parent's module configuration. The image includes the async extra. These
+checks do not cover cancellation, deadline/connection faults, application event
+idempotency or longer-lived service startup/shutdown.
+These are recipe tests, not installed-plugin semantic activation,
+webhook verification, production delivery or portal review.
 Run the separate activation inventory in fresh installed-plugin conversations.

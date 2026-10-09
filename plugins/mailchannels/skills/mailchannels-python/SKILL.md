@@ -18,7 +18,10 @@ patterns and resource names.
 3. Load `MAILCHANNELS_API_KEY` from server-side configuration. Use an explicit
    `mailchannels.Client` for each separate credential.
 4. Select direct or queued submission deliberately. Use async methods only
-   inside an async application and preserve its concurrency conventions.
+   inside an async application and preserve its concurrency conventions. Own
+   async clients with `async with` or application shutdown `await aclose()`;
+   do not mix synchronous calls into an async-only client lifetime or share a
+   connection pool across event loops.
 5. Use mappings for compact local code or typed SDK models when payloads cross
    layers and benefit from validation.
 6. Catch only the typed exceptions whose handling differs. Respect retry

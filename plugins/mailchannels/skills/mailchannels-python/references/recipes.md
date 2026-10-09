@@ -1,7 +1,7 @@
 # MailChannels Python recipes
 
-Synchronous sending examples tested against the `mailchannels` 1.5.0 package using isolated loopback HTTP tests
-on 2026-10-07. The published package requires Python 3.9 or later. Confirm the
+Synchronous and owned async-client examples tested against the `mailchannels`
+1.5.0 package using isolated loopback HTTP tests. The published package requires Python 3.9 or later. Confirm the
 installed version before relying on a recently added method.
 
 ## Install
@@ -42,6 +42,29 @@ tenant.emails.queue(message)
 ```
 
 Do not swap module-global configuration between concurrent requests.
+
+## Own an asynchronous client
+
+Install `mailchannels[async]` before using this function from an existing async
+application. The async context closes its HTTPX connection pool on success or
+exception; each call has its own credential and client.
+
+```python
+import mailchannels
+
+async def queue_tenant(message, tenant_api_key):
+    async with mailchannels.Client(api_key=tenant_api_key) as tenant:
+        return await tenant.emails.queue_async(message)
+```
+
+Await `queue_tenant(message, tenant_api_key)` inside your application's event
+loop. `_async` means asynchronous Python I/O; `queue_async` selects the provider's
+queued `/send-async` endpoint. Provider acceptance is not delivery. Exceptions
+propagate without automatic retries; use an application-owned durable operation
+record before submission and reconcile uncertain outcomes before any resend.
+Do not mix synchronous calls into this async-only client's lifetime. A long-lived
+service can instead own a client in its startup/shutdown lifecycle and await
+`aclose()` at shutdown; do not reuse a pool across event loops.
 
 ## Typed message
 

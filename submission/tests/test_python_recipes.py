@@ -1,4 +1,5 @@
 """Run exact plugin Python fences through the published SDK and loopback HTTP."""
+import asyncio
 import json
 import re
 import threading
@@ -11,7 +12,9 @@ import pytest
 
 SOURCE = Path('/recipe.md')
 BLOCKS = re.findall(r'^```python\n(.*?)^```', SOURCE.read_text(), re.M | re.S)
-assert len(BLOCKS) == 3
+assert len(BLOCKS) == 4
+# Keep the original sync cases bound to their original fences after insertion.
+SYNC_BLOCKS = [BLOCKS[0], BLOCKS[1], BLOCKS[3]]
 
 
 @pytest.fixture
@@ -53,7 +56,7 @@ def execute(index):
                          'to': [{'email': 'recipient@example.net'}],
                          'subject': 'Tenant fixture', 'text': 'Fixture'}}
     try:
-        exec(compile(BLOCKS[index], str(SOURCE), 'exec'), scope)
+        exec(compile(SYNC_BLOCKS[index], str(SOURCE), 'exec'), scope)
         return scope
     finally:
         if 'tenant' in scope:
@@ -90,3 +93,66 @@ def test_separate_client_preserves_parent_configuration(local_api):
     execute(1)
     execute(0)
     assert [call['key'] for call in calls] == ['fixture-tenant-key', 'fixture-parent-key']
+
+
+@pytest.fixture
+def owned_pools(monkeypatch):
+    from mailchannels.http_client_async import HTTPXClient
+    original = HTTPXClient._get_client
+    pools = []
+
+    def observe(transport):
+        pool = original(transport)
+        if pool not in pools:
+            pools.append(pool)
+        return pool
+
+    monkeypatch.setattr(HTTPXClient, '_get_client', observe)
+    return pools
+
+
+def async_recipe():
+    scope = {}
+    exec(compile(BLOCKS[2], str(SOURCE), 'exec'), scope)
+    return scope['queue_tenant']
+
+
+def async_message(subject='Async fixture'):
+    return {'from': {'email': 'notifications@example.com'},
+            'to': [{'email': 'recipient@example.net'}],
+            'subject': subject, 'text': 'Fixture'}
+
+
+@pytest.mark.parametrize('status', [202, 429])
+def test_async_recipe_closes_real_pool_and_does_not_retry(local_api, owned_pools, status):
+    calls, state = local_api
+    state['status'] = status
+    coroutine = async_recipe()(async_message(), 'fixture-async-key')
+    if status == 202:
+        assert asyncio.run(coroutine)['request_id'] == 'fixture-request'
+    else:
+        with pytest.raises(mailchannels.exceptions.RateLimitError):
+            asyncio.run(coroutine)
+    assert len(calls) == len(owned_pools) == 1
+    assert calls[0]['key'] == 'fixture-async-key'
+    assert calls[0]['path'] == '/tx/v1/send-async'
+    assert calls[0]['body']['personalizations'][0]['to'][0]['email'] == 'recipient@example.net'
+    assert owned_pools[0].is_closed
+
+
+def test_concurrent_async_tenants_own_separate_closed_pools(local_api, owned_pools):
+    calls, _ = local_api
+    queue = async_recipe()
+
+    async def concurrently():
+        return await asyncio.gather(
+            queue(async_message('Tenant A'), 'fixture-key-a'),
+            queue(async_message('Tenant B'), 'fixture-key-b'),
+        )
+
+    assert len(asyncio.run(concurrently())) == 2
+    assert sorted((call['body']['subject'], call['key']) for call in calls) == [
+        ('Tenant A', 'fixture-key-a'), ('Tenant B', 'fixture-key-b')]
+    assert len(owned_pools) == 2 and all(pool.is_closed for pool in owned_pools)
+    execute(0)
+    assert calls[-1]['key'] == 'fixture-parent-key'
