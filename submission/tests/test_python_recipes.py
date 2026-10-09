@@ -236,7 +236,9 @@ def test_async_cancellation_during_cleanup(local_api, owned_pools, monkeypatch, 
         monkeypatch.setattr(httpx.AsyncClient, 'aclose', gated_close)
         task = asyncio.create_task(async_recipe()(async_message(), 'fixture-cleanup-key'))
         try:
-            assert await asyncio.to_thread(state['received'].wait, 3), 'Server did not receive request'
+            assert await asyncio.to_thread(
+                state['received'].wait, 3
+            ), 'Server did not receive request'
             assert task.cancel()
             await asyncio.wait_for(close_waiting.wait(), timeout=3)
             assert not original_entered.is_set()
