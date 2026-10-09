@@ -28,17 +28,31 @@ Both verify serialized sender/recipient, endpoint, and authentication with fixtu
 values. Python additionally executes the exact async function with real published
 SDK1.5.0/HTTPX0.28.1 loopback requests: success and429 each close the pool with
 one request/no retry; concurrent tenants own distinct closed pools and preserve
-the parent's module configuration. The image includes the async extra. These
+the parent's module configuration. The image includes the async extra.
 Three additional cases first confirm full server receipt, then cancel the task,
 apply an application deadline while awaiting a withheld response, or drop the
 connection without response headers. Each propagates the expected error, closes
 the actual HTTPX pool and makes exactly one request. The server never reports
 acceptance in these cases: cleanup is not proof that a provider did not accept a
 message. Reconcile the uncertain outcome before any resend. Removing async
-context ownership fails all three pool-closure assertions. There are 13 Python
-cases in total. These checks do not cover repeated cancellation during cleanup,
-SDK transport-timeout configuration, every connection fault, application event
-idempotency or longer-lived service startup/shutdown.
+context ownership fails all three pool-closure assertions.
+
+Two parameterized cleanup cases insert an asyncio event gate in the actual
+`httpx.AsyncClient.aclose` before delegating to its saved original method. After
+full server receipt and the first cancellation, the single-cancellation control
+releases the gate and observes original-close entry/completion and a closed client.
+A second cancellation while the gate is waiting interrupts it: the task finishes
+with `CancelledError`, original close never starts and the client is still open.
+Both cases make exactly one request with the expected endpoint and credential.
+The harness records that state before bounded recovery with saved original close
+outside the cancelled recipe task; all owned clients are then closed. A temporary
+control replacing the second cancellation with gate release fails the repeated
+case's interruption assertion. All waits use events and bounded deadlines.
+There are 15 Python cases in total. This characterizes controlled scheduling before
+close I/O, not cancellation during native HTTPX cleanup or a socket leak: the
+HTTP/1.0 fixture does not prove retained persistent connections. SDK transport
+timeouts, broader connection faults, application event idempotency and longer-lived
+service startup/shutdown remain unvalidated.
 These are recipe tests, not installed-plugin semantic activation,
 webhook verification, production delivery or portal review.
 Run the separate activation inventory in fresh installed-plugin conversations.
