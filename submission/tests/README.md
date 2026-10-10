@@ -72,9 +72,25 @@ docker run --rm --network none \
   python -m pytest -q -s test_python_recipes.py -k transport_read_timeout
 ```
 
-There are 18 Python cases in total. This characterizes controlled scheduling before
-close I/O, not cancellation during native HTTPX cleanup or a socket leak: the
-HTTP/1.0 fixture does not prove retained persistent connections. SDK transport
+Four additional cases use a separate HTTP/1.1 server with Content-Length and
+keep-alive requests. After receiving the complete POST, the server sends a full
+202 or 429 response, or starts a body and stalls it for single cancellation or a
+0.6-second read timeout. It then reads peer EOF/reset without first closing the
+socket. Each case observes that close before harness recovery, checks the exact
+serialized request and synthetic tenant credential, one POST/no retry, the precise
+return or exception, and the real HTTPX client's closed state and empty connection
+pool. No close shim or gate is used in these four cases. Diagnostics precede bounded
+task/client recovery and server/thread/socket teardown. Removing context ownership
+in a disposable recipe copy leaves an idle persistent connection after 202/429;
+both cases fail the socket-close assertion, then recovery closes the client and socket.
+
+There are 22 Python cases in total. The original HTTP/1.0 cases and inserted cleanup
+gate remain unchanged. The new cases distinguish closing an idle persistent socket
+after a complete 202/429 response from aborting an in-flight response on cancellation
+or timeout; transport abort alone does not prove context ownership. Neither fixture
+qualifies repeated cancellation during native close I/O or long-lived service lifetime.
+Use `-k http11` with the pinned-image command above to run just the four socket cases.
+SDK transport
 30-second timeout timing, DNS/TLS/connect/write/pool stalls, broader connection
 faults, application event idempotency and longer-lived service startup/shutdown
 remain unvalidated. A timeout after receipt has an uncertain provider outcome;

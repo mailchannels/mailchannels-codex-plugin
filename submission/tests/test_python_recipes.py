@@ -408,3 +408,183 @@ def test_async_cancellation_during_cleanup(local_api, owned_pools, monkeypatch, 
                              sort_keys=True))
 
     asyncio.run(cancel_during_cleanup())
+
+
+@pytest.fixture
+def persistent_api(monkeypatch):
+    calls = []
+    state = {'case': None, 'handlers': [], 'sockets': [], 'recovering': False,
+             'received': threading.Event(), 'response_started': threading.Event(),
+             'peer_closed': threading.Event(), 'peer_close': None,
+             'peer_closed_before_recovery': False, 'observer_error': None}
+
+    class Handler(BaseHTTPRequestHandler):
+        protocol_version = 'HTTP/1.1'
+
+        def do_POST(self):
+            state['handlers'].append(threading.current_thread())
+            state['sockets'].append(self.connection)
+            self.connection.settimeout(8)
+            raw_body = self.rfile.read(int(self.headers['Content-Length']))
+            calls.append({'method': self.command, 'path': self.path,
+                          'protocol': self.request_version, 'key': self.headers.get('X-Api-Key'),
+                          'content_length': int(self.headers['Content-Length']),
+                          'body_bytes': len(raw_body), 'body': json.loads(raw_body),
+                          'connection': self.headers.get('Connection'),
+                          'peer': self.client_address})
+            state['received'].set()
+            status = 429 if state['case'] == '429' else 202
+            data = ({'message': 'Fixture rate limit'} if status == 429 else
+                    {'request_id': 'fixture-request', 'queued_at': '2026-10-07T00:00:00Z'})
+            body = json.dumps(data).encode()
+            self.send_response(status)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Content-Length', str(len(body)))
+            self.end_headers()
+            complete = state['case'] in ('202', '429')
+            self.wfile.write(body if complete else body[:1])
+            self.wfile.flush()
+            state['response'] = {'protocol': self.protocol_version, 'status': status,
+                                 'content_length': len(body),
+                                 'bytes_sent': len(body) if complete else 1,
+                                 'complete': complete, 'connection_close': self.close_connection}
+            state['response_started'].set()
+            # Observe the client's close without finishing or closing this server socket first.
+            try:
+                extra = self.rfile.read(1)
+                if extra:
+                    state['observer_error'] = f'Unexpected subsequent request byte: {extra!r}'
+                else:
+                    state['peer_close'] = 'eof'
+            except ConnectionResetError:
+                state['peer_close'] = 'reset'
+            except TimeoutError:
+                state['observer_error'] = 'Server peer-close watchdog expired'
+            if state['peer_close']:
+                state['peer_closed_before_recovery'] = not state['recovering']
+                state['peer_closed'].set()
+            self.close_connection = True
+
+        def log_message(self, *args):
+            pass
+
+    server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    server.block_on_close = False
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    monkeypatch.setenv('MAILCHANNELS_API_URL', f'http://127.0.0.1:{server.server_port}/tx/v1')
+    monkeypatch.setenv('MAILCHANNELS_API_KEY', 'fixture-parent-key')
+    monkeypatch.setattr(mailchannels, 'api_key', None)
+    monkeypatch.setattr(mailchannels, 'base_url', None)
+    try:
+        yield calls, state
+    finally:
+        state['recovering'] = True
+        for connection in state['sockets']:
+            if connection.fileno() != -1:
+                try:
+                    connection.shutdown(socket.SHUT_RDWR)
+                except OSError:
+                    pass  # The peer or handler may have already closed the socket.
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=3)
+        assert not thread.is_alive()
+        for handler in state['handlers']:
+            handler.join(timeout=3)
+            assert not handler.is_alive()
+        assert all(connection.fileno() == -1 for connection in state['sockets'])
+        print(json.dumps({'http11_fixture_cleanup': True, 'case': state['case'],
+                          'handlers_stopped': len(state['handlers']),
+                          'server_sockets_closed': len(state['sockets'])}, sort_keys=True))
+
+
+@pytest.mark.parametrize('case', ['202', '429', 'cancel', 'read_timeout'])
+def test_async_http11_peer_closes_before_recovery(persistent_api, owned_pools, case):
+    import httpx
+
+    calls, state = persistent_api
+    state['case'] = case
+    timeout = 0.6 if case == 'read_timeout' else 30.0
+
+    async def observe_close():
+        started = time.monotonic()
+        outcome = 'pending'
+        task = asyncio.create_task(
+            async_recipe()(async_message(), 'fixture-http11-tenant-key', timeout=timeout)
+        )
+        try:
+            assert await asyncio.to_thread(state['received'].wait, 3), 'Request not received'
+            assert await asyncio.to_thread(state['response_started'].wait, 3), 'Response not started'
+            if case == 'cancel':
+                assert not task.done() and task.cancel()
+            if case == '202':
+                response = await asyncio.wait_for(asyncio.shield(task), timeout=3)
+                assert response['request_id'] == 'fixture-request'
+                assert response['queued_at'] == '2026-10-07T00:00:00Z'
+                assert response['http_headers']['content-length'] == '70'
+                assert 'connection' not in response['http_headers']
+                outcome = 'success'
+            else:
+                error_type = {'429': mailchannels.exceptions.RateLimitError,
+                              'cancel': asyncio.CancelledError,
+                              'read_timeout': httpx.ReadTimeout}[case]
+                with pytest.raises(error_type) as error:
+                    try:
+                        await asyncio.wait_for(asyncio.shield(task), timeout=3)
+                    except TimeoutError as watchdog:
+                        raise AssertionError('Application watchdog expired') from watchdog
+                assert type(error.value) is error_type
+                outcome = type(error.value).__name__
+            assert task.done()
+            assert await asyncio.to_thread(state['peer_closed'].wait, 3), (
+                'Persistent HTTP/1.1 socket did not close before harness recovery'
+            )
+            assert state['peer_closed_before_recovery']
+            assert state['peer_close'] in ('eof', 'reset') and not state['observer_error']
+            assert len(calls) == len(owned_pools) == len(state['sockets']) == 1
+            call = calls[0]
+            assert call['method'] == 'POST' and call['protocol'] == 'HTTP/1.1'
+            assert call['path'] == '/tx/v1/send-async'
+            assert call['key'] == 'fixture-http11-tenant-key'
+            assert call['connection'].lower() == 'keep-alive'
+            assert call['content_length'] == call['body_bytes']
+            assert call['body'] == {
+                'from': {'email': 'notifications@example.com'},
+                'personalizations': [{'to': [{'email': 'recipient@example.net'}]}],
+                'subject': 'Async fixture', 'content': [{'type': 'text/plain', 'value': 'Fixture'}],
+            }
+            assert state['response']['protocol'] == 'HTTP/1.1'
+            assert not state['response']['connection_close']
+            assert state['response']['complete'] == (case in ('202', '429'))
+            assert owned_pools[0].is_closed
+            assert owned_pools[0]._transport._pool.connections == []
+            assert all(getattr(owned_pools[0].timeout, phase) == timeout
+                       for phase in ('connect', 'read', 'write', 'pool'))
+        finally:
+            print(json.dumps({'http11_observation': True, 'case': case, 'outcome': outcome,
+                              'elapsed_seconds': time.monotonic() - started, 'requests': calls,
+                              'response': state.get('response'), 'peer_close': state['peer_close'],
+                              'peer_closed_before_recovery': state['peer_closed_before_recovery'],
+                              'observer_error': state['observer_error'], 'task_done': task.done(),
+                              'task_cancelled': task.cancelled(),
+                              'clients_closed': [pool.is_closed for pool in owned_pools],
+                              'connections': [repr(pool._transport._pool.connections)
+                                              for pool in owned_pools],
+                              'httpx_timeout': [pool.timeout.as_dict() for pool in owned_pools]},
+                             sort_keys=True))
+            state['recovering'] = True
+            if not task.done():
+                task.cancel()
+            try:
+                await asyncio.wait_for(asyncio.gather(task, return_exceptions=True), timeout=3)
+            finally:
+                for pool in owned_pools:
+                    await asyncio.wait_for(pool.aclose(), timeout=3)
+                    assert pool.is_closed
+            assert await asyncio.to_thread(state['peer_closed'].wait, 3)
+            print(json.dumps({'http11_recovery': True, 'case': case, 'task_done': task.done(),
+                              'clients_closed': all(pool.is_closed for pool in owned_pools),
+                              'peer_closed': state['peer_closed'].is_set()}, sort_keys=True))
+
+    asyncio.run(observe_close())
