@@ -515,7 +515,9 @@ def test_async_http11_peer_closes_before_recovery(persistent_api, owned_pools, c
         )
         try:
             assert await asyncio.to_thread(state['received'].wait, 3), 'Request not received'
-            assert await asyncio.to_thread(state['response_started'].wait, 3), 'Response not started'
+            assert await asyncio.to_thread(
+                state['response_started'].wait, 3
+            ), 'Response not started'
             if case == 'cancel':
                 assert not task.done() and task.cancel()
             if case == '202':
