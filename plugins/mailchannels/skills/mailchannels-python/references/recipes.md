@@ -54,14 +54,23 @@ HTTPX close, not cancellation during native close I/O.
 
 ```python
 import mailchannels
+from mailchannels.http_client_async import HTTPXClient
 
-async def queue_tenant(message, tenant_api_key):
-    async with mailchannels.Client(api_key=tenant_api_key) as tenant:
+async def queue_tenant(message, tenant_api_key, timeout=30.0):
+    async with mailchannels.Client(
+        api_key=tenant_api_key, async_http_client=HTTPXClient(timeout=timeout)
+    ) as tenant:
         return await tenant.emails.queue_async(message)
 ```
 
 Await `queue_tenant(message, tenant_api_key)` inside your application's event
-loop. `_async` means asynchronous Python I/O; `queue_async` selects the provider's
+loop; pass `timeout=` to choose the transport timeout in seconds. The default is
+30 seconds. HTTPX applies this value to connect, read, write and pool waits; a read
+timeout limits inactivity while awaiting the next response chunk, so a progressing
+response can take longer overall. This is not a wall-clock deadline. Loopback tests
+qualify shortened read timeouts before headers and during a stalled body, plus a
+progressing body; they do not qualify 30-second timing or the other timeout phases.
+`_async` means asynchronous Python I/O; `queue_async` selects the provider's
 queued `/send-async` endpoint. Provider acceptance is not delivery. Exceptions
 propagate without automatic retries; use an application-owned durable operation
 record before submission and reconcile uncertain outcomes before any resend.

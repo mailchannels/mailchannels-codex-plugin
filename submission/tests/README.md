@@ -48,11 +48,37 @@ The harness records that state before bounded recovery with saved original close
 outside the cancelled recipe task; all owned clients are then closed. A temporary
 control replacing the second cancellation with gate release fails the repeated
 case's interruption assertion. All waits use events and bounded deadlines.
-There are 15 Python cases in total. This characterizes controlled scheduling before
+The exact async fence also passes an explicit `HTTPXClient(timeout=timeout)` with
+the existing 30-second default. The success and rejection cases verify all four
+timeout fields on the actual HTTPX client. Three new cases use a 0.6-second value:
+after complete request receipt, withholding headers or stalling a started body
+raises `httpx.ReadTimeout`; a body sent in chunks every 0.15 seconds succeeds with
+the exact accepted response despite taking longer than 0.6 seconds overall.
+Server phase events identify each stall. Each case checks one POST, endpoint,
+synthetic credential, request body, configured timeout and actual pool closure.
+A separate 3-second watchdog bounds broken controls and never counts as a transport
+timeout. Tasks, handler threads and clients have bounded cleanup, including failure
+paths. Removing the explicit timeout produces watchdog failures in both stall
+cases, followed by recorded recovery.
+
+To run these cases against an already-built pinned image, mount the current runner
+as well as the recipe; the image's copied runner may belong to an earlier revision:
+
+```sh
+docker run --rm --network none \
+  -v "$PWD/plugins/mailchannels/skills/mailchannels-python/references/recipes.md:/recipe.md:ro" \
+  -v "$PWD/submission/tests/test_python_recipes.py:/tests/test_python_recipes.py:ro" \
+  mailchannels-plugin-python-async-cleanup-recipes \
+  python -m pytest -q -s test_python_recipes.py -k transport_read_timeout
+```
+
+There are 18 Python cases in total. This characterizes controlled scheduling before
 close I/O, not cancellation during native HTTPX cleanup or a socket leak: the
 HTTP/1.0 fixture does not prove retained persistent connections. SDK transport
-timeouts, broader connection faults, application event idempotency and longer-lived
-service startup/shutdown remain unvalidated.
+30-second timeout timing, DNS/TLS/connect/write/pool stalls, broader connection
+faults, application event idempotency and longer-lived service startup/shutdown
+remain unvalidated. A timeout after receipt has an uncertain provider outcome;
+pool closure does not establish non-acceptance and does not authorize a retry.
 These are recipe tests, not installed-plugin semantic activation,
 webhook verification, production delivery or portal review.
 Run the separate activation inventory in fresh installed-plugin conversations.

@@ -4,6 +4,7 @@ import json
 import re
 import socket
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -21,11 +22,13 @@ SYNC_BLOCKS = [BLOCKS[0], BLOCKS[1], BLOCKS[3]]
 @pytest.fixture
 def local_api(monkeypatch):
     calls = []
-    state = {'status': 202, 'mode': 'respond',
-             'received': threading.Event(), 'release': threading.Event()}
+    state = {'status': 202, 'mode': 'respond', 'handlers': [], 'chunks': [],
+             'received': threading.Event(), 'release': threading.Event(),
+             'phase': threading.Event(), 'completed': threading.Event(), 'phase_name': None}
 
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self):
+            state['handlers'].append(threading.current_thread())
             calls.append({'path': self.path, 'key': self.headers.get('X-Api-Key'),
                           'body': json.loads(self.rfile.read(int(self.headers['Content-Length'])))})
             state['received'].set()
@@ -38,6 +41,38 @@ def local_api(monkeypatch):
                 # Release only during fixture teardown; never send after cancellation.
                 state['release'].wait(timeout=5)
                 return
+            if state['mode'] == 'stall_headers':
+                state['phase_name'] = 'headers_withheld'
+                state['phase'].set()
+                state['release'].wait(timeout=5)
+                return
+            if state['mode'] in ('stall_body', 'progress'):
+                data = {'request_id': 'fixture-request', 'queued_at': '2026-10-07T00:00:00Z'}
+                body = json.dumps(data).encode()
+                self.send_response(202)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(body)))
+                self.end_headers()
+                self.wfile.write(body[:1])
+                self.wfile.flush()
+                state['chunks'].append(time.monotonic())
+                state['phase_name'] = 'body_started'
+                state['phase'].set()
+                if state['mode'] == 'stall_body':
+                    state['release'].wait(timeout=5)
+                    return
+                # Pace real chunks below the read timeout, with a longer total duration.
+                for start in range(1, len(body), 8):
+                    if state['release'].wait(timeout=0.15):
+                        return
+                    try:
+                        self.wfile.write(body[start:start + 8])
+                        self.wfile.flush()
+                    except (BrokenPipeError, ConnectionResetError):
+                        return
+                    state['chunks'].append(time.monotonic())
+                state['completed'].set()
+                return
             self.send_response(state['status'])
             self.send_header('Content-Type', 'application/json')
             self.end_headers()
@@ -48,6 +83,7 @@ def local_api(monkeypatch):
             pass
 
     server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    server.block_on_close = False
     thread = threading.Thread(target=server.serve_forever, daemon=True)
     thread.start()
     monkeypatch.setenv('MAILCHANNELS_API_URL', f'http://127.0.0.1:{server.server_port}/tx/v1')
@@ -60,7 +96,13 @@ def local_api(monkeypatch):
         state['release'].set()
         server.shutdown()
         server.server_close()
-        thread.join()
+        thread.join(timeout=3)
+        assert not thread.is_alive()
+        for handler in state['handlers']:
+            handler.join(timeout=3)
+            assert not handler.is_alive()
+        print(json.dumps({'fixture_cleanup': True, 'mode': state['mode'],
+                          'handlers_stopped': len(state['handlers'])}, sort_keys=True))
 
 
 def execute(index):
@@ -151,6 +193,8 @@ def test_async_recipe_closes_real_pool_and_does_not_retry(local_api, owned_pools
     assert calls[0]['path'] == '/tx/v1/send-async'
     assert calls[0]['body']['personalizations'][0]['to'][0]['email'] == 'recipient@example.net'
     assert owned_pools[0].is_closed
+    assert all(getattr(owned_pools[0].timeout, phase) == 30.0
+               for phase in ('connect', 'read', 'write', 'pool'))
 
 
 def test_concurrent_async_tenants_own_separate_closed_pools(local_api, owned_pools):
@@ -169,6 +213,86 @@ def test_concurrent_async_tenants_own_separate_closed_pools(local_api, owned_poo
     assert len(owned_pools) == 2 and all(pool.is_closed for pool in owned_pools)
     execute(0)
     assert calls[-1]['key'] == 'fixture-parent-key'
+
+
+@pytest.mark.parametrize('mode', ['stall_headers', 'stall_body', 'progress'])
+def test_async_transport_read_timeout(local_api, owned_pools, mode):
+    import httpx
+
+    calls, state = local_api
+    state['mode'] = mode
+    timeout = 0.6
+
+    async def request_with_timeout():
+        started = time.monotonic()
+        task = asyncio.create_task(
+            async_recipe()(async_message(), 'fixture-timeout-key', timeout=timeout)
+        )
+        try:
+            assert await asyncio.to_thread(state['received'].wait, 3)
+            assert await asyncio.to_thread(state['phase'].wait, 3)
+            assert state['phase_name'] == (
+                'headers_withheld' if mode == 'stall_headers' else 'body_started'
+            )
+            if mode == 'progress':
+                response = await asyncio.wait_for(asyncio.shield(task), timeout=3)
+                assert response == {
+                    'request_id': 'fixture-request', 'queued_at': '2026-10-07T00:00:00Z',
+                    'http_headers': response['http_headers'],
+                }
+                assert response['http_headers']['content-type'] == 'application/json'
+                assert response['http_headers']['content-length'] == '70'
+                assert await asyncio.to_thread(state['completed'].wait, 3)
+                assert state['chunks'][-1] - state['chunks'][0] > timeout
+            else:
+                with pytest.raises(httpx.ReadTimeout):
+                    try:
+                        await asyncio.wait_for(asyncio.shield(task), timeout=3)
+                    except TimeoutError as error:
+                        raise AssertionError(
+                            'Application watchdog expired before transport ReadTimeout'
+                        ) from error
+            assert len(calls) == len(owned_pools) == 1
+            assert calls[0]['path'] == '/tx/v1/send-async'
+            assert calls[0]['key'] == 'fixture-timeout-key'
+            assert calls[0]['body']['content'] == [{'type': 'text/plain', 'value': 'Fixture'}]
+            assert calls[0]['body']['from']['email'] == 'notifications@example.com'
+            assert calls[0]['body']['subject'] == 'Async fixture'
+            assert calls[0]['body']['personalizations'][0]['to'][0]['email'] == (
+                'recipient@example.net'
+            )
+            assert all(getattr(owned_pools[0].timeout, phase) == timeout
+                       for phase in ('connect', 'read', 'write', 'pool'))
+            assert owned_pools[0].is_closed
+        finally:
+            error = task.exception() if task.done() and not task.cancelled() else None
+            print(json.dumps({
+                'mode': mode, 'phase': state['phase_name'],
+                'body_completed': state['completed'].is_set(),
+                'request_received': state['received'].is_set(), 'request_count': len(calls),
+                'task_done_before_recovery': task.done(),
+                'outcome': (type(error).__name__ if error else
+                            ('success' if task.done() else 'pending')),
+                'elapsed_seconds': time.monotonic() - started, 'chunk_count': len(state['chunks']),
+                'chunk_span_seconds': (state['chunks'][-1] - state['chunks'][0]
+                                       if state['chunks'] else None),
+                'client_closed_before_recovery': [pool.is_closed for pool in owned_pools],
+                'httpx_timeout': [pool.timeout.as_dict() for pool in owned_pools],
+            }, sort_keys=True))
+            state['release'].set()
+            if not task.done():
+                task.cancel()
+            try:
+                await asyncio.wait_for(asyncio.gather(task, return_exceptions=True), timeout=3)
+            finally:
+                for pool in owned_pools:
+                    await asyncio.wait_for(pool.aclose(), timeout=3)
+                    assert pool.is_closed
+            print(json.dumps({'mode': mode, 'task_done_after_recovery': task.done(),
+                              'recovered_clients_closed': all(p.is_closed for p in owned_pools)},
+                             sort_keys=True))
+
+    asyncio.run(request_with_timeout())
 
 
 @pytest.mark.parametrize('failure', ['cancel', 'deadline', 'drop'])
