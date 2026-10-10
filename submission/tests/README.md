@@ -84,15 +84,31 @@ task/client recovery and server/thread/socket teardown. Removing context ownersh
 in a disposable recipe copy leaves an idle persistent connection after 202/429;
 both cases fail the socket-close assertion, then recovery closes the client and socket.
 
-There are 22 Python cases in total. The original HTTP/1.0 cases and inserted cleanup
+One service lifecycle case creates two tenant Client owners at startup on a single
+event loop, then interleaves three operations per tenant: 202, 429, 202. Six distinct
+subjects identify exact serialized requests and their responses without retries.
+Each owner retains its real HTTPX client, HTTPcore pool and connection, and server
+socket and peer across all three operations, including success after rejection.
+Tenant credentials stay separate and parent configuration remains unchanged.
+Both clients remain open until explicit native `Client.aclose()` shutdown awaits.
+The server independently observes EOF/reset on both idle persistent sockets before
+recovery; both client pools are then closed and empty, and SDK transport references
+are released. Disposable controls omitting shutdown, recreating an owner, or aliasing
+tenant credentials fail their respective socket, identity, or credential assertions.
+Diagnostics precede bounded recovery and server/thread/socket teardown.
+
+There are 23 Python cases in total. The original HTTP/1.0 cases and inserted cleanup
 gate remain unchanged. The new cases distinguish closing an idle persistent socket
 after a complete 202/429 response from aborting an in-flight response on cancellation
 or timeout; transport abort alone does not prove context ownership. Neither fixture
-qualifies repeated cancellation during native close I/O or long-lived service lifetime.
-Use `-k http11` with the pinned-image command above to run just the four socket cases.
+qualifies repeated cancellation during native close I/O. The six-operation service
+case qualifies graceful idle closure after full responses, not production longevity
+or throughput. Use `-k service_lifecycle` for that case, or `-k http11` for all five
+socket cases, with the pinned-image command above.
 SDK transport
 30-second timeout timing, DNS/TLS/connect/write/pool stalls, broader connection
-faults, application event idempotency and longer-lived service startup/shutdown
+faults, application event idempotency, cross-loop or post-shutdown reuse, process
+crashes, service-framework integration and longer-lived service operation
 remain unvalidated. A timeout after receipt has an uncertain provider outcome;
 pool closure does not establish non-acceptance and does not authorize a retry.
 These are recipe tests, not installed-plugin semantic activation,
