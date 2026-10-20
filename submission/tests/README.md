@@ -68,7 +68,7 @@ as well as the recipe; the image's copied runner may belong to an earlier revisi
 docker run --rm --network none \
   -v "$PWD/plugins/mailchannels/skills/mailchannels-python/references/recipes.md:/recipe.md:ro" \
   -v "$PWD/submission/tests/test_python_recipes.py:/tests/test_python_recipes.py:ro" \
-  mailchannels-plugin-python-async-cleanup-recipes \
+  mailchannels-plugin-python-recipes \
   python -m pytest -q -s test_python_recipes.py -k transport_read_timeout
 ```
 
