@@ -289,9 +289,6 @@ def test_async_transport_read_timeout(local_api, owned_pools, mode):
                 for pool in owned_pools:
                     await asyncio.wait_for(pool.aclose(), timeout=3)
                     assert pool.is_closed
-            print(json.dumps({'mode': mode, 'task_done_after_recovery': task.done(),
-                              'recovered_clients_closed': all(p.is_closed for p in owned_pools)},
-                             sort_keys=True))
 
     asyncio.run(request_with_timeout())
 
@@ -542,9 +539,6 @@ def test_async_http11_peer_closes_before_recovery(persistent_api, owned_pools, c
                     await asyncio.wait_for(pool.aclose(), timeout=3)
                     assert pool.is_closed
             assert await asyncio.to_thread(state['peer_closed'].wait, 3)
-            print(json.dumps({'http11_recovery': True, 'case': case, 'task_done': task.done(),
-                              'clients_closed': all(pool.is_closed for pool in owned_pools),
-                              'peer_closed': state['peer_closed'].is_set()}, sort_keys=True))
 
     asyncio.run(observe_close())
 
@@ -712,11 +706,5 @@ def test_async_http11_service_lifecycle_reuses_tenant_connections_and_closes(
                 for peer in state['service_peers'].values()
             )))
             assert all(peer['error'] is None for peer in state['service_peers'].values())
-            print(json.dumps({'service_recovery': True, 'tasks_done': all(t.done() for t in tasks),
-                              'clients_closed': all(c.is_closed for c in owned_pools),
-                              'client_count': len(owned_pools),
-                              'peers_closed': all(p['closed'].is_set()
-                                                  for p in state['service_peers'].values())},
-                             sort_keys=True))
 
     asyncio.run(service_lifecycle())
