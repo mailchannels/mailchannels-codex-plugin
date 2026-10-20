@@ -26,9 +26,9 @@ each), and parent/tenant credential separation. PHP SDK 2.2.0: array and typed q
 payloads, rejection without retries, and missing-key rejection before HTTP.
 Both verify serialized sender/recipient, endpoint, and authentication with fixture
 values. Python additionally executes the exact async function with real published
-SDK1.5.0/HTTPX0.28.1 loopback requests: success and429 each close the pool with
+SDK 1.5.0/HTTPX 0.28.1 loopback requests: success and 429 each close the pool with
 one request/no retry; concurrent tenants own distinct closed pools and preserve
-the parent's module configuration. The image includes the async extra. These
+the parent's module configuration. The image includes the async extra.
 Three additional cases first confirm full server receipt, then cancel the task,
 apply an application deadline while awaiting a withheld response, or drop the
 connection without response headers. Each propagates the expected error, closes
