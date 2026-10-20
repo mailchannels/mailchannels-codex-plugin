@@ -21,24 +21,9 @@ the standalone tenant example's `message` and `tenant_api_key` inputs and closes
 that client after execution. The PHP fixture combines the original configuration
 and operation fences into one scope.
 
-Python SDK 1.5.0: three success cases, three rate-limit rejection cases (one attempt
-each), and parent/tenant credential separation. PHP SDK 2.2.0: array and typed queue
-payloads, rejection without retries, and missing-key rejection before HTTP.
-Both verify serialized sender/recipient, endpoint, and authentication with fixture
-values. Python additionally executes the exact async function with real published
-SDK 1.5.0/HTTPX 0.28.1 loopback requests: success and 429 each close the pool with
-one request/no retry; concurrent tenants own distinct closed pools and preserve
-the parent's module configuration. The image includes the async extra.
-Three additional cases first confirm full server receipt, then cancel the task,
-apply an application deadline while awaiting a withheld response, or drop the
-connection without response headers. Each propagates the expected error, closes
-the actual HTTPX pool and makes exactly one request. The server never reports
-acceptance in these cases: cleanup is not proof that a provider did not accept a
-message. Reconcile the uncertain outcome before any resend. Removing async
-context ownership fails all three pool-closure assertions. There are 13 Python
-cases in total. These checks do not cover repeated cancellation during cleanup,
-SDK transport-timeout configuration, every connection fault, application event
-idempotency or longer-lived service startup/shutdown.
-These are recipe tests, not installed-plugin semantic activation,
-webhook verification, production delivery or portal review.
+Python and PHP runners check endpoint, credentials, payload and single-attempt
+errors. Python also checks async pool cleanup on success, 429, cancellation,
+deadline and dropped connection. Post-receipt failures leave the provider outcome
+uncertain, so reconcile before resending. These are not activation, webhook,
+delivery or portal checks.
 Run the separate activation inventory in fresh installed-plugin conversations.
