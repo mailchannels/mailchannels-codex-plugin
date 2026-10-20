@@ -48,8 +48,8 @@ Do not swap module-global configuration between concurrent requests.
 Install `mailchannels[async]` before using this function from an existing async
 application. The async context awaits closure of its HTTPX connection pool on success or
 exception; each call has its own credential and client. A second cancellation
-during that await can interrupt cleanup, so the application must own recovery
-outside the cancelled task. Controlled tests cover an inserted gate before
+during that await can interrupt cleanup and leave the pool open; to close it
+reliably, use the service-owned lifecycle below. Controlled tests cover an inserted gate before
 HTTPX close, not cancellation during native close I/O.
 
 ```python
