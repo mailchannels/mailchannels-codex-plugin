@@ -46,19 +46,28 @@ Do not swap module-global configuration between concurrent requests.
 ## Own an asynchronous client
 
 Install `mailchannels[async]` before using this function from an existing async
-application. The async context closes its HTTPX connection pool on success or
-exception; each call has its own credential and client.
+application. The async context awaits closure of its HTTPX connection pool on success or
+exception; each call has its own credential and client. A second cancellation
+during that await can interrupt cleanup and leave the pool open; to close it
+reliably, use the service-owned lifecycle below.
 
 ```python
 import mailchannels
+from mailchannels.http_client_async import HTTPXClient
 
-async def queue_tenant(message, tenant_api_key):
-    async with mailchannels.Client(api_key=tenant_api_key) as tenant:
+async def queue_tenant(message, tenant_api_key, timeout=30.0):
+    async with mailchannels.Client(
+        api_key=tenant_api_key, async_http_client=HTTPXClient(timeout=timeout)
+    ) as tenant:
         return await tenant.emails.queue_async(message)
 ```
 
 Await `queue_tenant(message, tenant_api_key)` inside your application's event
-loop. `_async` means asynchronous Python I/O; `queue_async` selects the provider's
+loop; pass `timeout=` to choose the transport timeout in seconds. The default is
+30 seconds. HTTPX applies this value to connect, read, write and pool waits; a read
+timeout limits inactivity while awaiting the next response chunk, so a progressing
+response can take longer overall. This is not a wall-clock deadline.
+`_async` means asynchronous Python I/O; `queue_async` selects the provider's
 queued `/send-async` endpoint. Provider acceptance is not delivery. Exceptions
 propagate without automatic retries; use an application-owned durable operation
 record before submission and reconcile uncertain outcomes before any resend.
