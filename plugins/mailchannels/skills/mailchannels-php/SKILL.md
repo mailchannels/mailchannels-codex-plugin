@@ -1,6 +1,6 @@
 ---
 name: mailchannels-php
-description: Implement MailChannels outbound email with the official `mailchannels/mailchannels-php` package in PHP 8.1+ applications. Use for direct or queued sends, typed payloads, PSR-18 transport integration, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or signature verification. Do not translate JavaScript or Python SDK method names into PHP.
+description: Implement MailChannels outbound email with the official `mailchannels/mailchannels-php` package in PHP 8.2+ applications. Use for direct or queued sends, typed payloads, PSR-18 transport integration, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or signature verification. Do not translate JavaScript or Python SDK method names into PHP.
 ---
 
 # MailChannels PHP SDK

@@ -71,10 +71,7 @@ python3 /path/to/plugin-creator/scripts/validate_plugin.py plugins/mailchannels
 Run the skill validator for all six directories under
 `plugins/mailchannels/skills/`.
 
-Published-SDK recipe tests under `submission/tests/` use network-disabled Docker
-runs with synthetic loopback HTTP. Python includes an owned async-client pattern,
-success/error pool cleanup and concurrent credential isolation. These checks are
-separate from fresh-conversation skill activation and publisher review.
+Published-SDK recipe checks: see `submission/tests/README.md`.
 
 ## Support and policies
 

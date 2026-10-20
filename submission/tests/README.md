@@ -21,37 +21,14 @@ the standalone tenant example's `message` and `tenant_api_key` inputs and closes
 that client after execution. The PHP fixture combines the original configuration
 and operation fences into one scope.
 
-Python SDK 1.5.0: three success cases, three rate-limit rejection cases (one attempt
-each), and parent/tenant credential separation. PHP SDK 2.2.0: array and typed queue
-payloads, rejection without retries, and missing-key rejection before HTTP.
-Both verify serialized sender/recipient, endpoint, and authentication with fixture
-values. Python additionally executes the exact async function with real published
-SDK1.5.0/HTTPX0.28.1 loopback requests: success and429 each close the pool with
-one request/no retry; concurrent tenants own distinct closed pools and preserve
-the parent's module configuration. The image includes the async extra.
-Three additional cases first confirm full server receipt, then cancel the task,
-apply an application deadline while awaiting a withheld response, or drop the
-connection without response headers. Each propagates the expected error, closes
-the actual HTTPX pool and makes exactly one request. The server never reports
-acceptance in these cases: cleanup is not proof that a provider did not accept a
-message. Reconcile the uncertain outcome before any resend. Removing async
-context ownership fails all three pool-closure assertions.
-
-No case covers repeated cancellation: a second cancellation while the context
-awaits HTTPX close can interrupt cleanup and leave the pool open.
-
-The exact async fence also passes an explicit `HTTPXClient(timeout=timeout)` with
-the existing 30-second default. The success and rejection cases verify all four
-timeout fields on the actual HTTPX client. Three new cases use a 0.6-second value:
-after complete request receipt, withholding headers or stalling a started body
-raises `httpx.ReadTimeout`; a body sent in chunks every 0.15 seconds succeeds with
-the exact accepted response despite taking longer than 0.6 seconds overall.
-Server phase events identify each stall. Each case checks one POST, endpoint,
-synthetic credential, request body, configured timeout and actual pool closure.
-A separate 3-second watchdog bounds broken controls and never counts as a transport
-timeout. Tasks, handler threads and clients have bounded cleanup, including failure
-paths. Removing the explicit timeout produces watchdog failures in both stall
-cases, followed by recorded recovery.
+Python and PHP runners check endpoint, credentials, payload and single-attempt
+errors. Python also checks async pool cleanup on success, 429, cancellation,
+deadline and dropped connection; a 0.6-second read timeout on a stalled response;
+closure of HTTP/1.1 keep-alive sockets after 202 and 429; and a service-owned
+lifecycle where two tenant clients stay open across interleaved sends until
+`Client.aclose()` at shutdown. Post-receipt failures leave the provider outcome
+uncertain, so reconcile before resending. These are not activation, webhook,
+delivery or portal checks.
 
 To run these cases against an already-built pinned image, mount the current runner
 as well as the recipe; the image's copied runner may belong to an earlier revision:
@@ -64,44 +41,7 @@ docker run --rm --network none \
   python -m pytest -q -s test_python_recipes.py -k transport_read_timeout
 ```
 
-Four additional cases use a separate HTTP/1.1 server with Content-Length and
-keep-alive requests. After receiving the complete POST, the server sends a full
-202 or 429 response, or starts a body and stalls it for single cancellation or a
-0.6-second read timeout. It then reads peer EOF/reset without first closing the
-socket. Each case observes that close before harness recovery, checks the exact
-serialized request and synthetic tenant credential, one POST/no retry, the precise
-return or exception, and the real HTTPX client's closed state and empty connection
-pool. No close shim or gate is used in these four cases. Diagnostics precede bounded
-task/client recovery and server/thread/socket teardown. Removing context ownership
-in a disposable recipe copy leaves an idle persistent connection after 202/429;
-both cases fail the socket-close assertion, then recovery closes the client and socket.
+Use `-k transport_read_timeout`, `-k http11` or `-k service_lifecycle` to run one
+group of the async lifecycle cases.
 
-One service lifecycle case creates two tenant Client owners at startup on a single
-event loop, then interleaves three operations per tenant: 202, 429, 202. Six distinct
-subjects identify exact serialized requests and their responses without retries.
-Each owner retains its real HTTPX client, HTTPcore pool and connection, and server
-socket and peer across all three operations, including success after rejection.
-Tenant credentials stay separate and parent configuration remains unchanged.
-Both clients remain open until explicit native `Client.aclose()` shutdown awaits.
-The server independently observes EOF/reset on both idle persistent sockets before
-recovery; both client pools are then closed and empty, and SDK transport references
-are released. Disposable controls omitting shutdown, recreating an owner, or aliasing
-tenant credentials fail their respective socket, identity, or credential assertions.
-Diagnostics precede bounded recovery and server/thread/socket teardown.
-
-There are 21 Python cases in total. The original HTTP/1.0 cases remain unchanged.
-The new cases distinguish closing an idle persistent socket after a complete 202/429
-response from aborting an in-flight response on cancellation or timeout; transport
-abort alone does not prove context ownership. The six-operation service case
-qualifies graceful idle closure after full responses, not production longevity or
-throughput. Use `-k service_lifecycle` for that case, or `-k http11` for all five
-socket cases, with the pinned-image command above.
-SDK transport
-30-second timeout timing, DNS/TLS/connect/write/pool stalls, broader connection
-faults, application event idempotency, cross-loop or post-shutdown reuse, process
-crashes, service-framework integration and longer-lived service operation
-remain unvalidated. A timeout after receipt has an uncertain provider outcome;
-pool closure does not establish non-acceptance and does not authorize a retry.
-These are recipe tests, not installed-plugin semantic activation,
-webhook verification, production delivery or portal review.
 Run the separate activation inventory in fresh installed-plugin conversations.
