@@ -37,17 +37,9 @@ acceptance in these cases: cleanup is not proof that a provider did not accept a
 message. Reconcile the uncertain outcome before any resend. Removing async
 context ownership fails all three pool-closure assertions.
 
-Two parameterized cleanup cases insert an asyncio event gate in the actual
-`httpx.AsyncClient.aclose` before delegating to its saved original method. After
-full server receipt and the first cancellation, the single-cancellation control
-releases the gate and observes original-close entry/completion and a closed client.
-A second cancellation while the gate is waiting interrupts it: the task finishes
-with `CancelledError`, original close never starts and the client is still open.
-Both cases make exactly one request with the expected endpoint and credential.
-The harness records that state before bounded recovery with saved original close
-outside the cancelled recipe task; all owned clients are then closed. A temporary
-control replacing the second cancellation with gate release fails the repeated
-case's interruption assertion. All waits use events and bounded deadlines.
+No case covers repeated cancellation: a second cancellation while the context
+awaits HTTPX close can interrupt cleanup and leave the pool open.
+
 The exact async fence also passes an explicit `HTTPXClient(timeout=timeout)` with
 the existing 30-second default. The success and rejection cases verify all four
 timeout fields on the actual HTTPX client. Three new cases use a 0.6-second value:
@@ -97,13 +89,12 @@ are released. Disposable controls omitting shutdown, recreating an owner, or ali
 tenant credentials fail their respective socket, identity, or credential assertions.
 Diagnostics precede bounded recovery and server/thread/socket teardown.
 
-There are 23 Python cases in total. The original HTTP/1.0 cases and inserted cleanup
-gate remain unchanged. The new cases distinguish closing an idle persistent socket
-after a complete 202/429 response from aborting an in-flight response on cancellation
-or timeout; transport abort alone does not prove context ownership. Neither fixture
-qualifies repeated cancellation during native close I/O. The six-operation service
-case qualifies graceful idle closure after full responses, not production longevity
-or throughput. Use `-k service_lifecycle` for that case, or `-k http11` for all five
+There are 21 Python cases in total. The original HTTP/1.0 cases remain unchanged.
+The new cases distinguish closing an idle persistent socket after a complete 202/429
+response from aborting an in-flight response on cancellation or timeout; transport
+abort alone does not prove context ownership. The six-operation service case
+qualifies graceful idle closure after full responses, not production longevity or
+throughput. Use `-k service_lifecycle` for that case, or `-k http11` for all five
 socket cases, with the pinned-image command above.
 SDK transport
 30-second timeout timing, DNS/TLS/connect/write/pool stalls, broader connection
