@@ -49,8 +49,7 @@ Install `mailchannels[async]` before using this function from an existing async
 application. The async context awaits closure of its HTTPX connection pool on success or
 exception; each call has its own credential and client. A second cancellation
 during that await can interrupt cleanup and leave the pool open; to close it
-reliably, use the service-owned lifecycle below. Controlled tests cover an inserted gate before
-HTTPX close, not cancellation during native close I/O.
+reliably, use the service-owned lifecycle below.
 
 ```python
 import mailchannels
@@ -67,9 +66,7 @@ Await `queue_tenant(message, tenant_api_key)` inside your application's event
 loop; pass `timeout=` to choose the transport timeout in seconds. The default is
 30 seconds. HTTPX applies this value to connect, read, write and pool waits; a read
 timeout limits inactivity while awaiting the next response chunk, so a progressing
-response can take longer overall. This is not a wall-clock deadline. Loopback tests
-qualify shortened read timeouts before headers and during a stalled body, plus a
-progressing body; they do not qualify 30-second timing or the other timeout phases.
+response can take longer overall. This is not a wall-clock deadline.
 `_async` means asynchronous Python I/O; `queue_async` selects the provider's
 queued `/send-async` endpoint. Provider acceptance is not delivery. Exceptions
 propagate without automatic retries; use an application-owned durable operation
