@@ -71,6 +71,8 @@ python3 /path/to/plugin-creator/scripts/validate_plugin.py plugins/mailchannels
 Run the skill validator for all six directories under
 `plugins/mailchannels/skills/`.
 
+Published-SDK recipe checks: see `submission/tests/README.md`.
+
 ## Support and policies
 
 - Documentation: <https://docs.mailchannels.com/email-api/overview>

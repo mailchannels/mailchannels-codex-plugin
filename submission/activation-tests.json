@@ -1,5 +1,5 @@
 {
-  "version": "1.0.1",
+  "version": "1.0.3",
   "positive_tests": [
     {
       "id": "provider-evaluation",
@@ -50,6 +50,14 @@
         "mailchannels-safe-automation"
       ],
       "expected_behavior": "Keep the provider key behind a trusted worker and enforce authorization, consent, approval, atomic budgets, and idempotency."
+    },
+    {
+      "id": "python-async-queue",
+      "prompt": "Queue tenant-specific MailChannels emails concurrently in this async Python service without leaking HTTP connections or swapping global credentials. Test success and rejection without live email.",
+      "expected_skills": [
+        "mailchannels-python"
+      ],
+      "expected_behavior": "Install async extra, own clients with async context/shutdown, preserve per-tenant credentials and exception propagation, distinguish async I/O from provider queue; do not automatically retry uncertain submissions."
     }
   ],
   "negative_tests": [
