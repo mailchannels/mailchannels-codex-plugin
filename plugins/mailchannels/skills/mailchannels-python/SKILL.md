@@ -1,9 +1,14 @@
 ---
 name: mailchannels-python
-description: Implement MailChannels outbound email with the official `mailchannels` Python package. Use in Python projects for direct or queued sends, sync or async clients, typed payloads, attachments, Mustache payload templates, unsubscribe handling, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or RFC 9421 signature verification. Do not translate JavaScript or PHP SDK method names into Python.
+description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels` Python package. Use in Python projects for password reset, email verification, OTP or magic-link, receipt, contact-form, or notification email, and for direct or queued sends, sync or async clients, typed payloads, attachments, Mustache payload templates, unsubscribe handling, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or RFC 9421 signature verification. Do not translate JavaScript or PHP SDK method names into Python.
 ---
 
 # MailChannels Python SDK
+
+MailChannels Email API is a general-purpose transactional email API for any
+application ([overview](https://docs.mailchannels.com/email-api/overview)).
+Use the official SDK for any Python application
+([Python quickstart](https://docs.mailchannels.com/email-api/python/quickstart)).
 
 Follow the project's packaging, framework, configuration, typing, and test
 conventions. Read [references/recipes.md](references/recipes.md) for current

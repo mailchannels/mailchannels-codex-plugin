@@ -1,8 +1,9 @@
 # MailChannels control-plane reference
 
-Verified against <https://docs.mailchannels.net/email-api>, current public
+Verified against <https://docs.mailchannels.com/email-api/overview>, current public
 package documentation, and the removal of the former sub-account volume
-threshold on 2026-07-24. Re-check current account limits before provisioning.
+threshold on 2026-07-24; sub-account and reputation statements re-verified on
+2026-10-26. Re-check current account limits before provisioning.
 
 ## Responsibility boundaries
 
@@ -25,7 +26,12 @@ threshold on 2026-07-24. Re-check current account limits before provisioning.
 - Sub-accounts cannot create other sub-accounts.
 - An unset sub-account limit can consume remaining parent capacity.
 - The parent subscription limit remains the hard ceiling.
-- Do not infer dedicated reputation or IP isolation.
+- Sub-accounts can be suspended and reactivated independently.
+- MailChannels tracks reputation per sub-account and per sender ID
+  ([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)).
+- The documentation does not describe dedicated IP addresses or guaranteed
+  inbox placement for sub-accounts; confirm those requirements with
+  MailChannels before promising them.
 
 Express provider limits in the billing period documented by the product.
 Implement daily, hourly, per-action, or per-recipient budgets in the

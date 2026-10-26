@@ -1,9 +1,14 @@
 ---
 name: mailchannels-js
-description: Implement MailChannels outbound email with the official `mailchannels-sdk` package in server-side JavaScript or TypeScript. Use for direct or queued sends, attachments, Mustache payload templates, unsubscribe handling, custom headers, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, signature verification, or the local simulator. Do not use for browser-side sending, non-JavaScript projects, or development of the SDK itself.
+description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels-sdk` package in server-side JavaScript or TypeScript. Use for password reset, email verification, OTP or magic-link, receipt, contact-form, or notification email, and for direct or queued sends, attachments, Mustache payload templates, unsubscribe handling, custom headers, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, signature verification, or the local simulator. Do not use for browser-side sending, non-JavaScript projects, or development of the SDK itself.
 ---
 
 # MailChannels JavaScript SDK
+
+MailChannels Email API is a general-purpose transactional email API for any
+application ([overview](https://docs.mailchannels.com/email-api/overview)).
+Use the official SDK for any server-side JavaScript or TypeScript application
+([Node.js quickstart](https://docs.mailchannels.com/email-api/javascript/quickstart)).
 
 Use the project's package manager, runtime conventions, mail abstraction, and
 test style. Read [references/recipes.md](references/recipes.md) for verified
@@ -37,5 +42,5 @@ patterns and resource names.
   signature before applying any event.
 - Keep application authorization, consent, approvals, budgets, and audit trails
   even when provider-side sub-account controls are enabled.
-- Do not promise delivery, inbox placement, isolation, or plan features that
-  the current product documentation does not guarantee.
+- Do not promise delivery, inbox placement, dedicated IPs, or plan features
+  that the current product documentation does not guarantee.
