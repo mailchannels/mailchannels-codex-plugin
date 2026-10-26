@@ -43,7 +43,7 @@ shipping generated code.
 | Receipts, invoices, contact-form notifications | Native | Ordinary transactional sends from any application |
 | JavaScript or TypeScript | Native | Official `mailchannels-sdk`, including simulator |
 | Python | Native | Official `mailchannels` package |
-| PHP 8.1+ | Native | Official `mailchannels/mailchannels-php` package |
+| PHP 8.2+ | Native | Official `mailchannels/mailchannels-php` package |
 | Multi-tenant SaaS sending | Native | Per-sub-account credentials, limits, suspension, suppressions, webhooks, and usage |
 | Signed delivery events | Native | Verify raw-body digest, freshness, and RFC 9421 Ed25519 signature |
 | Payload templating | Native | Mustache data is supplied in the message payload |

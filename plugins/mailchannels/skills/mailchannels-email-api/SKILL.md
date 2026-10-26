@@ -89,7 +89,7 @@ before promising them.
 
 - Use `mailchannels-js` for JavaScript or TypeScript.
 - Use `mailchannels-python` for Python.
-- Use `mailchannels-php` for PHP 8.1+.
+- Use `mailchannels-php` for PHP 8.2+.
 - Also use `mailchannels-platform-operations` for credentials, sub-accounts,
   quotas, usage, DKIM, domain checks, suppressions, webhooks, or metrics.
 - Also use `mailchannels-safe-automation` when an agent, user, or downstream
