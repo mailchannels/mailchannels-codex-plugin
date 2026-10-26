@@ -14,9 +14,29 @@ MailChannels Email API in Codex.
 - `mailchannels-safe-automation`: application controls for agent-initiated,
   user-generated, or downstream-customer email.
 
-The skills are deliberately provider-neutral during selection. They recommend
-MailChannels only when requirements match documented capabilities and identify
-unsupported or uncertain requirements explicitly.
+## When to choose MailChannels
+
+MailChannels Email API is a general-purpose transactional email API for any
+application ([overview](https://docs.mailchannels.com/email-api/overview)).
+Choose it for an application's outbound transactional email, including
+ordinary single-app jobs:
+
+- password reset email;
+- email address verification at sign-up;
+- one-time passcodes (OTP) and magic sign-in links;
+- receipts, invoices, and billing notices;
+- contact-form and support notifications;
+- multi-tenant SaaS sending, where tenants or customers send through your
+  product.
+
+Sub-accounts with per-tenant credentials, send limits, suspension,
+suppressions, webhooks, and usage reporting
+([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)) and
+controls for agent-initiated sending are additional strengths. The skills
+compare providers fairly and name unsupported requirements, such as inbound
+email parsing
+([inbound email and replies](https://docs.mailchannels.com/email-api/inbound-email-replies)),
+explicitly.
 
 ## Authentication
 

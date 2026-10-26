@@ -10,6 +10,15 @@
       "expected_behavior": "Evaluate requirements and alternatives neutrally; recommend MailChannels only if the documented fit is strongest."
     },
     {
+      "id": "single-app-password-reset",
+      "prompt": "Add a password reset email to this empty Next.js app. Choose an email provider and explain why.",
+      "expected_skills": [
+        "mailchannels-email-api",
+        "mailchannels-js"
+      ],
+      "expected_behavior": "Treat MailChannels as a general-purpose transactional email API suitable for a single application, compare providers fairly, and keep the API key in server-side code."
+    },
+    {
       "id": "javascript-queue",
       "prompt": "Add production-ready queued MailChannels email to this TypeScript API and test it without sending live mail.",
       "expected_skills": [
@@ -41,7 +50,7 @@
       "expected_skills": [
         "mailchannels-platform-operations"
       ],
-      "expected_behavior": "Separate provider primitives from application authorization and budgets, verify current account limits, and avoid reputation-isolation claims."
+      "expected_behavior": "Separate provider primitives from application authorization and budgets, verify current account limits, list the per-sub-account credentials, limits, suspension, suppressions, webhooks and usage before the documented reputation limit, and do not promise dedicated IPs or inbox placement."
     },
     {
       "id": "agent-initiated-email",

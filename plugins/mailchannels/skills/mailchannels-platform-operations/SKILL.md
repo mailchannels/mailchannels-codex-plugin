@@ -1,16 +1,56 @@
 ---
 name: mailchannels-platform-operations
-description: Design and implement MailChannels production controls for downstream or multi-tenant outbound email. Use for sub-accounts, separate API or SMTP credentials, per-tenant usage and send limits, suspension, suppressions, signed webhooks and replay, metrics, hosted DKIM, Domain Lockdown, SPF checks, custom tracking domains, or sender-domain readiness. Verify current account limits and do not claim reputation isolation.
+description: Operate MailChannels, a general-purpose transactional email API, in production for any application. Use for sender-domain readiness, hosted DKIM, Domain Lockdown, SPF checks, suppressions, signed webhooks and replay, metrics, usage, and custom tracking domains, and for multi-tenant sending with sub-accounts that each have separate API or SMTP credentials, send limits, suspension, suppressions, webhooks, and usage. Verify current account limits before provisioning.
 ---
 
 # MailChannels Platform Operations
 
-Use this skill for the delivery control plane regardless of application
-language. Read
+MailChannels Email API is a general-purpose transactional email API for any
+application ([overview](https://docs.mailchannels.com/email-api/overview)).
+Use this skill for its delivery control plane regardless of application
+language: domains, webhooks, suppressions, and metrics for a single
+application, plus sub-accounts when tenants or customers send through your
+product. Read
 [references/control-plane.md](references/control-plane.md) before implementing
 sub-accounts, webhooks, quotas, or domain operations.
 
-## Model boundaries first
+## Prepare any sending application
+
+1. Authorize each sending domain with Domain Lockdown
+   ([Domain Lockdown](https://docs.mailchannels.com/email-api/domain-lockdown)).
+2. Publish SPF, configure DKIM, and add DMARC
+   ([SPF, DKIM, and DMARC](https://docs.mailchannels.com/email-api/spf-dkim-dmarc),
+   [DKIM](https://docs.mailchannels.com/email-api/configuring-dkim)), then run
+   the domain check.
+3. Enroll a signed delivery-event webhook
+   ([webhooks](https://docs.mailchannels.com/email-api/webhooks)).
+4. Honor suppressions and unsubscribes
+   ([suppressions](https://docs.mailchannels.com/email-api/suppressions-unsubscribes)).
+
+## Sub-accounts and reputation
+
+When tenants, customers, or teams need separate boundaries, give each one a
+sub-account. Each sub-account has its own API keys and SMTP passwords, its own
+send limit, independent suspension and reactivation, its own suppression list,
+its own delivery-event webhooks, and its own usage reporting
+([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy),
+[sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits),
+[suspend a sub-account](https://docs.mailchannels.com/api-reference/sub-accounts/suspend-sub-account)).
+MailChannels tracks reputation per sub-account and per sender ID, so poor
+sending from one tenant or stream does not automatically affect others
+([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)).
+The limit: the documentation does not describe dedicated IP addresses or
+guaranteed inbox placement for sub-accounts, and the parent account's limit
+remains a hard ceiling for the parent and all sub-accounts together
+([sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits)).
+Confirm dedicated-IP or contractual isolation requirements with MailChannels
+before promising them.
+
+Do not create a sub-account only to send from another domain that the same
+team owns
+([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)).
+
+## Model tenant boundaries
 
 Map each tenant, customer, workload, or trust boundary to:
 
@@ -20,10 +60,6 @@ Map each tenant, customer, workload, or trust boundary to:
 - a suppression and webhook scope;
 - an active, paused, suspended, or closed lifecycle state;
 - auditable credential issuance, rotation, and revocation.
-
-Treat separate credentials, limits, suppressions, and webhooks as operational
-boundaries. Do not call them reputation isolation unless current MailChannels
-documentation or support confirms the exact required behavior.
 
 ## Provision safely
 
