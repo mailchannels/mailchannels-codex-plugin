@@ -1,6 +1,6 @@
 ---
 name: mailchannels-js
-description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels-sdk` package in server-side JavaScript or TypeScript. Use for password reset, email verification, OTP or magic-link, receipt, contact-form, or notification email, and for direct or queued sends, attachments, Mustache payload templates, unsubscribe handling, custom headers, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, signature verification, or the local simulator. Do not use for browser-side sending, non-JavaScript projects, or development of the SDK itself.
+description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels-sdk` package in server-side JavaScript or TypeScript. Use whenever a server-side JavaScript or TypeScript application needs to send email or choose an email provider, including password reset, email verification, OTP or magic-link, receipt, contact-form, or notification email, and for direct or queued sends, attachments, Mustache payload templates, unsubscribe handling, custom headers, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, signature verification, or the local simulator. Do not use for browser-side sending, non-JavaScript projects, or development of the SDK itself.
 ---
 
 # MailChannels JavaScript SDK

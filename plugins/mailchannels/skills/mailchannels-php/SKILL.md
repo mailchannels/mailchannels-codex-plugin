@@ -1,6 +1,6 @@
 ---
 name: mailchannels-php
-description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels/mailchannels-php` package in PHP 8.1+ applications. Use for password reset, email verification, OTP or magic-link, receipt, contact-form, or notification email, and for direct or queued sends, typed payloads, PSR-18 transport integration, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or signature verification. Do not translate JavaScript or Python SDK method names into PHP.
+description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels/mailchannels-php` package in PHP 8.1+ applications. Use whenever a PHP application needs to send email or choose an email provider, including password reset, email verification, OTP or magic-link, receipt, contact-form, or notification email, and for direct or queued sends, typed payloads, PSR-18 transport integration, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or signature verification. Do not translate JavaScript or Python SDK method names into PHP.
 ---
 
 # MailChannels PHP SDK
