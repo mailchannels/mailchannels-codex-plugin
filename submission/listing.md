@@ -10,7 +10,7 @@
 - Website: <https://www.mailchannels.com/>
 - Documentation: <https://docs.mailchannels.net/email-api>
 - Source: <https://github.com/mailchannels/mailchannels-codex-plugin>
-- Support: <https://support.mailchannels.com/hc/en-us>
+This project is supported by the MailChannels team on a best-effort basis. File support issues on GitHub: <https://github.com/mailchannels/mailchannels-codex-plugin/issues>. MailChannels customers with service-operation problems can get support at <https://support.mailchannels.com/>.
 - Privacy: <https://www.mailchannels.com/privacy-policy/>
 - Terms: <https://www.mailchannels.com/terms-of-service/>
 - License: MIT

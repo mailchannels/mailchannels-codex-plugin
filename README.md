@@ -73,10 +73,14 @@ Run the skill validator for all six directories under
 
 Published-SDK recipe checks: see `submission/tests/README.md`.
 
-## Support and policies
+## Support
 
-- Documentation: <https://docs.mailchannels.com/email-api/overview>
-- Support: <https://support.mailchannels.com/hc/en-us>
+This project is supported by the MailChannels team on a best-effort basis. The best way to get support is to file an issue on GitHub: https://github.com/mailchannels/mailchannels-codex-plugin/issues
+
+If you are a MailChannels customer and have a problem with the operation of the MailChannels service, you can get support at https://support.mailchannels.com/
+
+## Policies
+
 - Privacy: <https://www.mailchannels.com/privacy-policy/>
 - Terms: <https://www.mailchannels.com/terms-of-service/>
 

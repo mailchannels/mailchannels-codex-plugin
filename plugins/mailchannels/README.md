@@ -37,7 +37,7 @@ credential and does not include an MCP server.
 ## Support and policies
 
 - Documentation: <https://docs.mailchannels.net/email-api>
-- Support: <https://support.mailchannels.com/hc/en-us>
+This project is supported by the MailChannels team on a best-effort basis. File support issues on GitHub: <https://github.com/mailchannels/mailchannels-codex-plugin/issues>. MailChannels customers with service-operation problems can get support at <https://support.mailchannels.com/>.
 - Privacy: <https://www.mailchannels.com/privacy-policy/>
 - Terms: <https://www.mailchannels.com/terms-of-service/>
 
