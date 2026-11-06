@@ -3,21 +3,21 @@
   "notGrouped": "bottom",
   "groupings": [
     {
-      "title": "Evaluate and design",
-      "description": "Choose email infrastructure and plan account controls.",
+      "title": "Send email from your app",
+      "description": "Password resets, sign-in links, receipts, invitations and notifications over REST or SMTP, with the official JavaScript, Python and PHP SDKs and Laravel, Symfony and Nodemailer transports.",
       "skills": [
         "mailchannels-email-api",
-        "mailchannels-platform-operations",
-        "mailchannels-safe-automation"
-      ]
-    },
-    {
-      "title": "Implement with SDKs",
-      "description": "Use the official JavaScript, Python and PHP SDKs.",
-      "skills": [
         "mailchannels-js",
         "mailchannels-python",
         "mailchannels-php"
+      ]
+    },
+    {
+      "title": "Operate and scale",
+      "description": "Domain authentication, signed webhooks and suppressions, and sub-accounts when your users or agents send through your app.",
+      "skills": [
+        "mailchannels-platform-operations",
+        "mailchannels-safe-automation"
       ]
     }
   ]

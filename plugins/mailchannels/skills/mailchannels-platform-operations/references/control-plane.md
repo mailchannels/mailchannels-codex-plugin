@@ -1,8 +1,8 @@
 # MailChannels control-plane reference
 
-Verified against <https://docs.mailchannels.net/email-api>, current public
-package documentation, and the removal of the former sub-account volume
-threshold on 2026-07-24. Re-check current account limits before provisioning.
+Verified against <https://docs.mailchannels.com/email-api/overview> and the
+public package documentation on 2026-11-06. Re-check the parent account's plan
+limit before provisioning.
 
 ## Responsibility boundaries
 
@@ -18,14 +18,26 @@ threshold on 2026-07-24. Re-check current account limits before provisioning.
 
 ## Sub-account facts
 
-- Sub-accounts do not require a minimum monthly-send plan.
-- Each sub-account has credentials separate from its parent.
-- Sends authenticated by a sub-account use its account scope for documented
-  limits, suppressions, and webhooks.
+Source: [multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)
+and [sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits).
+
+- Each sub-account has its own API keys and SMTP passwords, issued and deleted
+  by the parent.
+- Each sub-account has its own suppression list and delivery-event webhook,
+  managed with the sub-account's own API key. The parent does not receive
+  copies of its events.
+- Each sub-account has reputation isolation; sender IDs add reputation
+  boundaries between mail streams within an account or sub-account.
+- The parent can suspend a sub-account, which stops its sending, and activate
+  it again.
+- A sub-account limit is a number of sends per billing period. `-1` means no
+  explicit limit: it inherits the parent's remaining capacity. The parent can
+  set the limit (`0` pauses without suspending) or delete it.
+- Usage statistics are available per sub-account for the current billing
+  period.
+- The parent account's limit is the ceiling for the parent and all
+  sub-accounts together.
 - Sub-accounts cannot create other sub-accounts.
-- An unset sub-account limit can consume remaining parent capacity.
-- The parent subscription limit remains the hard ceiling.
-- Do not infer dedicated reputation or IP isolation.
 
 Express provider limits in the billing period documented by the product.
 Implement daily, hourly, per-action, or per-recipient budgets in the

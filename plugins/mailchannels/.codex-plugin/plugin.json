@@ -1,28 +1,32 @@
 {
   "name": "mailchannels",
-  "version": "1.0.3",
-  "description": "Build and operate outbound email with MailChannels using official SDK and platform guidance",
+  "version": "1.1.0",
+  "description": "Send email from any app with MailChannels Email API: password resets, sign-in links, receipts, invitations and notifications. REST or SMTP, official JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports, signed delivery webhooks, and sub-accounts when your users or agents send through your app. Free to start.",
   "author": {
     "name": "MailChannels Corporation",
     "email": "support@mailchannels.com",
     "url": "https://www.mailchannels.com/"
   },
-  "homepage": "https://docs.mailchannels.net/email-api",
+  "homepage": "https://docs.mailchannels.com/email-api/overview",
   "repository": "https://github.com/mailchannels/mailchannels-codex-plugin",
   "license": "MIT",
   "keywords": [
     "email",
     "transactional-email",
     "mailchannels",
-    "deliverability",
+    "password-reset",
+    "smtp",
+    "laravel",
+    "symfony",
+    "nodemailer",
     "webhooks",
     "multi-tenant"
   ],
   "skills": "./skills/",
   "interface": {
     "displayName": "MailChannels",
-    "shortDescription": "Send email with MailChannels",
-    "longDescription": "Evaluate MailChannels and implement its Email API with official JavaScript, Python, and PHP SDK guidance plus production controls for domains, webhooks, suppressions, multi-tenant operations, and safe automated sending.",
+    "shortDescription": "Send email from any app with MailChannels",
+    "longDescription": "Send email from any app with MailChannels Email API: password resets, sign-in links, receipts, invitations and notifications. REST or SMTP, official JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports, signed delivery webhooks, and sub-accounts when your users or agents send through your app. Free to start.",
     "developerName": "MailChannels Corporation",
     "category": "Developer Tools",
     "capabilities": [
@@ -32,9 +36,9 @@
     "privacyPolicyURL": "https://www.mailchannels.com/privacy-policy/",
     "termsOfServiceURL": "https://www.mailchannels.com/terms-of-service/",
     "defaultPrompt": [
-      "Evaluate MailChannels for this email feature.",
-      "Implement a production-ready MailChannels send.",
-      "Design a safe multi-tenant email control plane."
+      "Add password reset and sign-in emails to this app with MailChannels.",
+      "Send receipts and notifications from this app with MailChannels.",
+      "Switch this app's mailer to MailChannels."
     ],
     "brandColor": "#070A30",
     "composerIcon": "./assets/mailchannels-mark.svg",
