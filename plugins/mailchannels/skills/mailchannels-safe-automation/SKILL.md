@@ -1,6 +1,6 @@
 ---
 name: mailchannels-safe-automation
-description: Build controlled MailChannels outbound email for AI agents, autonomous workflows, user-generated content, or customer-managed senders. Use when a semi-trusted actor can choose recipients, sender identity, content, or volume and the system needs authorization, consent checks, budgets, approvals, audit trails, suppressions, signed delivery feedback, credential isolation, or independent suspension. This skill adds application safeguards; it does not claim MailChannels alone enforces them.
+description: Build controlled MailChannels sending for AI agents, autonomous workflows, user-generated content, or customer-managed senders. Use when a semi-trusted actor can choose recipients, sender identity, content, or volume and the system needs authorization, consent checks, budgets, approvals, audit trails, suppressions, signed delivery feedback, per-sender credentials, or independent suspension. Pairs MailChannels sub-accounts, which give each agent or customer its own keys, limits, suspension, suppressions, webhooks and reputation, with the application controls around them.
 ---
 
 # Safe Automated Email with MailChannels
@@ -29,12 +29,16 @@ implementing an autonomous, user-generated, or downstream-customer send path.
 
 ## Use provider controls precisely
 
-Map a sub-account to a meaningful downstream trust boundary when operationally
-appropriate. Sub-accounts do not require a minimum monthly-send plan. Use their
-separate credentials, send limit, usage, suppression list, and webhooks for
-revocation and attribution. Keep application authorization and atomic budgets
-because the provider limit is only a backstop and the parent ceiling still
-applies.
+Give each agent, customer, or other downstream trust boundary its own
+sub-account. Each one has its own API keys and SMTP passwords, send limit,
+suspension and activation, suppression list, webhook, usage reporting, and
+reputation isolation
+([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)). Use
+them for revocation, containment, and attribution. The application keeps
+authorization and atomic per-action budgets; the sub-account limit counts sends
+per billing period, and the parent account's limit is the ceiling for all of
+them
+([sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits)).
 
 If a deployment chooses not to use sub-accounts, preserve the same
 application-level identity, budget, suspension, and audit boundaries.

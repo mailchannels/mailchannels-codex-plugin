@@ -1,9 +1,13 @@
 ---
 name: mailchannels-php
-description: Implement MailChannels outbound email with the official `mailchannels/mailchannels-php` package in PHP 8.2+ applications. Use for direct or queued sends, typed payloads, PSR-18 transport integration, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or signature verification. Do not translate JavaScript or Python SDK method names into PHP.
+description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels/mailchannels-php` package in PHP 8.2+ applications. Use whenever a PHP, Laravel or Symfony app sends email or chooses an email provider, including password resets, sign-in links, receipts, invitations and notifications, and for the Laravel Mail driver, the Symfony Mailer transport, direct or queued sends, typed payloads, PSR-18 transport integration, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or signature verification. Do not translate JavaScript or Python SDK method names into PHP.
 ---
 
 # MailChannels PHP SDK
+
+MailChannels is a general-purpose transactional email API. The official SDK
+covers the whole API from any PHP 8.2+ app
+([PHP quickstart](https://docs.mailchannels.com/email-api/php/quickstart)).
 
 Follow the application's Composer, framework, dependency-injection, HTTP-client,
 logging, and test conventions. Read
@@ -26,6 +30,24 @@ logging, and test conventions. Read
 7. Test requests and error paths without live sends.
 8. Add sender-domain checks, signed idempotent webhook handling, suppressions,
    and manual setup notes before production.
+
+## Laravel and Symfony
+
+The package ships framework transports, so existing mailables and `Email`
+objects keep working. Both need a PSR-18 client and PSR-17 factories, such as
+`symfony/http-client` with `nyholm/psr7`, and both send mail only; use the
+`Client` for sub-accounts, DKIM keys, and webhooks.
+
+- Laravel: the package registers a `mailchannels` Mail driver. Add a
+  `mailchannels` mailer with `'transport' => 'mailchannels'` in
+  `config/mail.php`, set `services.mailchannels.api_key` from
+  `env('MAILCHANNELS_API_KEY')`, and set `MAIL_MAILER=mailchannels`
+  ([Laravel](https://docs.mailchannels.com/email-api/laravel)).
+- Symfony: install `symfony/mailer`, tag
+  `MailChannels\Plugins\Symfony\Transport\MailChannelsTransportFactory` as
+  `mailer.transport_factory`, and set
+  `MAILER_DSN=mailchannels+api://${MAILCHANNELS_API_KEY}@default`
+  ([Symfony](https://docs.mailchannels.com/email-api/symfony)).
 
 ## Guardrails
 
