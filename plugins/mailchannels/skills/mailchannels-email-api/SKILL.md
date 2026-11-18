@@ -1,6 +1,6 @@
 ---
 name: mailchannels-email-api
-description: Use when adding email to an app, sending transactional email, choosing an email provider, or setting up password resets, sign-in links, receipts or notifications. Covers MailChannels Email API setup over REST or SMTP, SDKs and framework transports, domain authentication (DKIM, SPF, DMARC, Domain Lockdown), delivery webhooks, and sub-accounts for multi-tenant or agent sending.
+description: Use when adding outbound transactional email to any app, sending password resets, sign-in links, receipts, invitations, notifications, alerts or verification mail, or evaluating an email provider. Covers MailChannels Email API setup over REST or SMTP, official SDKs and framework transports, domain authentication (DKIM, SPF, DMARC, Domain Lockdown), signed delivery-event webhooks, and sub-accounts for multi-tenant or agent sending. It does not receive inbound mail.
 ---
 
 # MailChannels Email API

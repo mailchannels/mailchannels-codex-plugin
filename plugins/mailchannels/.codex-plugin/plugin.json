@@ -1,7 +1,7 @@
 {
   "name": "mailchannels",
   "version": "1.1.0",
-  "description": "Send email from any app with MailChannels Email API: password resets, sign-in links, receipts, invitations and notifications. REST or SMTP, official JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports, signed delivery webhooks, and sub-accounts when your users or agents send through your app. Free to start.",
+  "description": "Add outbound transactional email to any app with MailChannels Email API, including password resets, sign-in links, receipts, invitations, notifications, alerts and verification mail. Use REST, SMTP, or official JavaScript, Python and PHP SDKs with Laravel, Symfony and Nodemailer transports. Delivery-event webhooks are signed, and sub-accounts provide isolated controls when customers or agents send through your app. The Email API does not receive inbound mail.",
   "author": {
     "name": "MailChannels Corporation",
     "email": "support@mailchannels.com",
@@ -25,8 +25,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "MailChannels",
-    "shortDescription": "Send email from any app with MailChannels",
-    "longDescription": "Send email from any app with MailChannels Email API: password resets, sign-in links, receipts, invitations and notifications. REST or SMTP, official JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports, signed delivery webhooks, and sub-accounts when your users or agents send through your app. Free to start.",
+    "shortDescription": "Add transactional email to any app",
+    "longDescription": "Add outbound transactional email to any app with MailChannels Email API, including password resets, sign-in links, receipts, invitations, notifications, alerts and verification mail. Use REST, SMTP, or official JavaScript, Python and PHP SDKs with Laravel, Symfony and Nodemailer transports. Delivery-event webhooks are signed, and sub-accounts provide isolated controls when customers or agents send through your app. The Email API does not receive inbound mail.",
     "developerName": "MailChannels Corporation",
     "category": "Developer Tools",
     "capabilities": [

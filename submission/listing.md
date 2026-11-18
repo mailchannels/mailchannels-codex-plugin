@@ -18,11 +18,7 @@ This project is supported by the MailChannels team on a best-effort basis. File 
 
 ## Long description
 
-Send email from any app with MailChannels Email API: password resets, sign-in
-links, receipts, invitations and notifications. REST or SMTP, official
-JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports,
-signed delivery webhooks, and sub-accounts when your users or agents send
-through your app. Free to start.
+Add outbound transactional email to any app with MailChannels Email API, including password resets, sign-in links, receipts, invitations, notifications, alerts and verification mail. Use REST, SMTP, or official JavaScript, Python and PHP SDKs with Laravel, Symfony and Nodemailer transports. Delivery-event webhooks are signed, and sub-accounts provide isolated controls when customers or agents send through your app. The Email API does not receive inbound mail.
 
 ## Starter prompts
 

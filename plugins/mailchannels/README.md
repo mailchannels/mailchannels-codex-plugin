@@ -50,7 +50,7 @@ credential and does not include an MCP server.
 - Send order receipts from this Laravel app through MailChannels.
 - Switch this Nodemailer app to the MailChannels transport.
 - Implement queued MailChannels delivery in this TypeScript service.
-- Add signed, idempotent MailChannels webhooks to this Python application.
+- Add signed MailChannels delivery webhooks with deduplicated event processing to this Python application.
 - Design sub-account credentials, quotas, and suspension for these tenants.
 - Make this agent-initiated email workflow safe and auditable.
 
