@@ -1,0 +1,7 @@
+interface:
+  display_name: "MailChannels for Ruby and Rails"
+  short_description: "Send app email from Rails or Ruby"
+  default_prompt: "Use $mailchannels-ruby to send this app's email through MailChannels."
+
+policy:
+  allow_implicit_invocation: true

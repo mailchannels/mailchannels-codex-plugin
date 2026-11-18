@@ -1,0 +1,7 @@
+interface:
+  display_name: "MailChannels Migration"
+  short_description: "Move email sending from another provider"
+  default_prompt: "Use $mailchannels-migration to plan moving this app's email to MailChannels."
+
+policy:
+  allow_implicit_invocation: true
