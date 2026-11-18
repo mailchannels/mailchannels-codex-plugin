@@ -1,6 +1,6 @@
 ---
 name: mailchannels-safe-automation
-description: Build controlled MailChannels sending for AI agents, autonomous workflows, user-generated content, or customer-managed senders. Use when a semi-trusted actor can choose recipients, sender identity, content, or volume and the system needs authorization, consent checks, budgets, approvals, audit trails, suppressions, signed delivery feedback, per-sender credentials, or independent suspension. Pairs MailChannels sub-accounts, which give each agent or customer its own keys, limits, suspension, suppressions, webhooks and reputation, with the application controls around them.
+description: Build controlled outbound MailChannels sending for AI agents, autonomous workflows, user-generated content, or customer-managed senders. Use when a semi-trusted actor can choose recipients, sender identity, content, or volume and the system needs authorization, consent checks, budgets, approvals, audit trails, suppressions, signed delivery feedback, per-sender credentials, or independent suspension. Pairs MailChannels sub-accounts, which give each agent or customer its own keys, limits, suspension, suppressions, webhooks and reputation, with the application controls around them. Sending only: an agent that must receive or read replies needs a separate inbound mailbox service.
 ---
 
 # Safe Automated Email with MailChannels

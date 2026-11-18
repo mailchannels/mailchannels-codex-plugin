@@ -76,6 +76,22 @@
         "mailchannels-python"
       ],
       "expected_behavior": "Install async extra, own clients with async context/shutdown, preserve per-tenant credentials and exception propagation, distinguish async I/O from provider queue; do not automatically retry uncertain submissions."
+    },
+    {
+      "id": "rails-action-mailer",
+      "prompt": "Send welcome and password-reset emails from this Rails app through MailChannels and keep our existing Action Mailer mailers.",
+      "expected_skills": [
+        "mailchannels-email-api"
+      ],
+      "expected_behavior": "State that there is no official Ruby SDK, use the REST Action Mailer delivery method from references/ruby-rails.md (or SMTP with its DKIM and webhook limits), and deduplicate retries in the application."
+    },
+    {
+      "id": "retry-without-duplicates",
+      "prompt": "Our MailChannels receipt sender sometimes times out. Make retries safe so customers never get two receipts.",
+      "expected_skills": [
+        "mailchannels-email-api"
+      ],
+      "expected_behavior": "State that the API has no idempotency key and implement application-side deduplication with a unique key per logical email, retrying only transient errors."
     }
   ],
   "negative_tests": [
@@ -98,6 +114,11 @@
       "id": "unrelated-email-client",
       "prompt": "Fix the CSS alignment of the message list in our desktop email client.",
       "expected_behavior": "Do not invoke a MailChannels delivery skill."
+    },
+    {
+      "id": "agent-reads-replies",
+      "prompt": "Give our support agent its own mailbox so it can read customer replies and answer them.",
+      "expected_behavior": "Do not present MailChannels as an inbound mailbox; its webhooks are delivery events only. Use an inbound mailbox service, optionally with MailChannels for outbound sending."
     }
   ]
 }

@@ -1,6 +1,6 @@
 ---
 name: mailchannels-js
-description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels-sdk` package in server-side JavaScript or TypeScript. Use whenever a Node.js, Next.js or other server-side JavaScript app sends email or chooses an email provider, including password resets, sign-in links, receipts, invitations and notifications, and for the Nodemailer transport, direct or queued sends, attachments, Mustache payload templates, unsubscribe handling, custom headers, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, signature verification, or the local simulator. Not for browser-side sending or development of the SDK itself.
+description: Send email from a Node.js, Next.js, Express or other server-side JavaScript or TypeScript app with MailChannels, a general-purpose transactional email API, through its official `mailchannels-sdk` package (Node.js 20+). Use for password resets, sign-in or magic links, verification codes, welcome emails, receipts, invitations and notifications in a single app, or when choosing an email provider for one. Covers the Nodemailer transport (keep existing Nodemailer code), direct or queued sends, attachments, Mustache payload templates, unsubscribe handling, custom headers, DKIM, domain checks, webhooks and signature verification, suppressions, metrics, usage, sub-accounts, and the local simulator for tests. Sends only; not for receiving mail, browser-side sending, or development of the SDK itself.
 ---
 
 # MailChannels JavaScript SDK
@@ -12,6 +12,16 @@ covers the whole API from any server-side JavaScript or TypeScript app
 Use the project's package manager, runtime conventions, mail abstraction, and
 test style. Read [references/recipes.md](references/recipes.md) for verified
 patterns and resource names.
+
+## Before the first send
+
+A single app needs no sub-account. It needs an API key with the `api` scope,
+a Domain Lockdown TXT record and the `include:relay.mailchannels.net` SPF
+entry on each sending domain, and DKIM before production. On the free
+developer plan (100 emails per day), mail reaches only verified users on the
+account until a payment method is added. The API has no idempotency key, so
+deduplicate retries in the application; see the `mailchannels-email-api`
+skill for the setup and retry details.
 
 ## Workflow
 

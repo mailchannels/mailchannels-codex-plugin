@@ -1,6 +1,6 @@
 interface:
   display_name: "MailChannels Platform Operations"
-  short_description: "Domains, webhooks, suppressions, sub-accounts"
+  short_description: "DNS, webhooks, suppressions, quotas, sub-accounts"
   default_prompt: "Use $mailchannels-platform-operations to design the MailChannels control plane for this system."
 
 policy:

@@ -1,6 +1,6 @@
 ---
 name: mailchannels-python
-description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels` Python package. Use whenever a Python, Django or FastAPI app sends email or chooses an email provider, including password resets, sign-in links, receipts, invitations and notifications, and for direct or queued sends, sync or async clients, typed payloads, attachments, Mustache payload templates, unsubscribe handling, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or RFC 9421 signature verification. Do not translate JavaScript or PHP SDK method names into Python.
+description: Send email from a Django, FastAPI, Flask or other Python app with MailChannels, a general-purpose transactional email API, through its official `mailchannels` package (Python 3.9+, sync and async clients). Use for password resets, sign-in or magic links, email verification, welcome emails, receipts, invitations and notifications in a single app, or when choosing an email provider for one. Covers direct or queued sends, typed payloads, attachments, Mustache payload templates, unsubscribe handling, DKIM, domain checks, signed webhooks with RFC 9421 verification, suppressions, metrics, usage, and sub-accounts. Sends only; not for receiving mail. Do not translate JavaScript or PHP SDK method names into Python.
 ---
 
 # MailChannels Python SDK
@@ -14,6 +14,16 @@ the SDK repository has
 Follow the project's packaging, framework, configuration, typing, and test
 conventions. Read [references/recipes.md](references/recipes.md) for current
 patterns and resource names.
+
+## Before the first send
+
+A single app needs no sub-account. It needs an API key with the `api` scope,
+a Domain Lockdown TXT record and the `include:relay.mailchannels.net` SPF
+entry on each sending domain, and DKIM before production. On the free
+developer plan (100 emails per day), mail reaches only verified users on the
+account until a payment method is added. The API has no idempotency key, so
+deduplicate retries in the application; see the `mailchannels-email-api`
+skill for the setup and retry details.
 
 ## Workflow
 

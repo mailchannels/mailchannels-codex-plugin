@@ -1,6 +1,6 @@
 interface:
   display_name: "MailChannels Python SDK"
-  short_description: "Send app email from Python, Django or FastAPI"
+  short_description: "Send app email from Django, FastAPI or Flask"
   default_prompt: "Use $mailchannels-python to implement this email feature in Python."
 
 policy:

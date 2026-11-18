@@ -1,6 +1,6 @@
 interface:
   display_name: "MailChannels Email API"
-  short_description: "Add email to any app: resets, receipts, alerts"
+  short_description: "Transactional email for any app: resets, receipts"
   default_prompt: "Use $mailchannels-email-api to add email to this app with MailChannels."
 
 policy:

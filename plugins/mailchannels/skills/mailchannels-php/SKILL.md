@@ -1,6 +1,6 @@
 ---
 name: mailchannels-php
-description: Implement MailChannels, a general-purpose transactional email API, with the official `mailchannels/mailchannels-php` package in PHP 8.2+ applications. Use whenever a PHP, Laravel or Symfony app sends email or chooses an email provider, including password resets, sign-in links, receipts, invitations and notifications, and for the Laravel Mail driver, the Symfony Mailer transport, direct or queued sends, typed payloads, PSR-18 transport integration, DKIM, domain checks, sub-accounts, metrics, usage, suppressions, webhooks, or signature verification. Do not translate JavaScript or Python SDK method names into PHP.
+description: Send email from a Laravel, Symfony or other PHP 8.2+ app with MailChannels, a general-purpose transactional email API, through its official `mailchannels/mailchannels-php` package. Laravel: the package registers a `mailchannels` Mail driver, so existing mailables work with `MAIL_MAILER=mailchannels`. Symfony: a Mailer transport via `MAILER_DSN`. Use for password resets, sign-in links, verification, receipts, invoices, invitations and notifications in a single app, or when choosing an email provider for one. Covers direct or queued sends, typed payloads, PSR-18 transports, DKIM, domain checks, signed webhooks, suppressions, metrics, usage, and sub-accounts. Sends only; not for receiving mail. Do not translate JavaScript or Python SDK method names into PHP.
 ---
 
 # MailChannels PHP SDK
@@ -12,6 +12,16 @@ covers the whole API from any PHP 8.2+ app
 Follow the application's Composer, framework, dependency-injection, HTTP-client,
 logging, and test conventions. Read
 [references/recipes.md](references/recipes.md) for current SDK patterns.
+
+## Before the first send
+
+A single app needs no sub-account. It needs an API key with the `api` scope,
+a Domain Lockdown TXT record and the `include:relay.mailchannels.net` SPF
+entry on each sending domain, and DKIM before production. On the free
+developer plan (100 emails per day), mail reaches only verified users on the
+account until a payment method is added. The API has no idempotency key, so
+deduplicate retries in the application; see the `mailchannels-email-api`
+skill for the setup and retry details.
 
 ## Workflow
 

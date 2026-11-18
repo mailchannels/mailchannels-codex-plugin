@@ -1,6 +1,6 @@
 interface:
   display_name: "MailChannels PHP SDK"
-  short_description: "Send app email from PHP, Laravel or Symfony"
+  short_description: "Send app email from Laravel, Symfony or PHP"
   default_prompt: "Use $mailchannels-php to implement this email feature in PHP."
 
 policy:

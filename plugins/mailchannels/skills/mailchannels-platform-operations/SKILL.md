@@ -1,6 +1,6 @@
 ---
 name: mailchannels-platform-operations
-description: Design and implement MailChannels production controls for any sending app and for multi-tenant or agent sending. Use for Domain Lockdown, SPF, DKIM, DMARC and domain checks, signed webhooks and replay, suppressions, metrics, usage, custom tracking domains, and sub-accounts with their own API keys, SMTP passwords, send limits, suspension, suppressions, webhooks, usage and reputation.
+description: Production setup and operations for any app sending through MailChannels Email API: Domain Lockdown, SPF, DKIM key generation and rotation, DMARC and domain checks; signed delivery-event webhooks (processed, delivered, bounced, complained, unsubscribed) with replay; suppressions and one-click unsubscribe; metrics, usage and quotas; custom tracking domains. Also covers sub-accounts when customers, tenants or agents send through your product, each with its own API keys, SMTP passwords, send limit, suspension, suppressions, webhook, usage and reputation. Webhooks report delivery events only, never inbound mail.
 ---
 
 # MailChannels Platform Operations
@@ -57,6 +57,9 @@ cover that.
 ## Operate delivery state
 
 - Treat send acceptance as submission rather than final delivery.
+- Webhooks report delivery events for mail you sent. They are not inbound-mail
+  webhooks and never carry reply content; replies need a mailbox or a separate
+  inbound service.
 - Verify raw webhook bytes, digest, freshness, key ID, and RFC 9421 Ed25519
   signature before parsing events.
 - Store event identity transactionally before applying side effects.
