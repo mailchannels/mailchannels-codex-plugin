@@ -1,6 +1,6 @@
 ---
 name: mailchannels-platform-operations
-description: Take any app's MailChannels sending to production and operate it - one app or many senders. Use for DNS authentication (Domain Lockdown, SPF, DMARC, and DKIM with MailChannels-managed keys and rotation) and the domain-check API; signed delivery-event webhooks with batch inspection and resend; hard-bounce, soft-bounce and complaint handling; suppression lists; delivery, engagement and volume metrics; usage and plan limits; and separate credentials per environment. Also for multi-tenant and agent sending, where each sub-account has its own API keys and SMTP passwords, send limit, suspension and activation through the API, suppression list, webhooks, usage reporting and reputation isolation. Webhooks are delivery events, not inbound mail.
+description: Take any app's MailChannels sending to production and operate it - one app or many senders. Use for DNS authentication (Domain Lockdown, SPF, DMARC, and DKIM with MailChannels-managed keys and rotation) and the domain-check API; signed delivery-event webhooks with batch inspection and resend; hard-bounce, soft-bounce and complaint handling; suppression lists; delivery, engagement and volume metrics; usage and plan limits; and separate credentials per environment. Also for multi-tenant and agent sending, where each sub-account has its own API keys and SMTP passwords, send limit, suspension and activation through the API, suppression list, webhooks, usage reporting and reputation isolation, and a customer's own sending domain can be authorized for that sub-account alone with Domain Lockdown, given a DKIM key with the sub-account's API key, and checked for DKIM, SPF and Domain Lockdown verdicts through the domain-check API. Webhooks are delivery events, not inbound mail.
 ---
 
 # MailChannels Platform Operations
@@ -76,6 +76,31 @@ Use sender IDs to keep the reputation of separate mail streams apart within one
 account or sub-account. Do not create a sub-account only to send from another
 domain that the same team owns; Domain Lockdown and authentication records
 cover that.
+
+## Onboard a tenant's own sending domain
+
+When each customer or workspace sends from a domain it owns:
+
+1. Have the customer publish a Domain Lockdown record that names only their
+   sub-account: `_mailchannels.customer.example TXT "v=mc1 auth=<sub-account-id>"`.
+   `auth=` accepts an account or sub-account ID, and MailChannels blocks mail
+   from any account the record does not list, so other tenants and the parent
+   cannot send from that domain unless the record also lists them
+   ([Domain Lockdown](https://docs.mailchannels.com/email-api/domain-lockdown)).
+2. With the sub-account's own API key, call `POST /domains/{domain}/dkim-keys`
+   and give the customer the TXT record it returns. A request made with a
+   sub-account key is treated as that sub-account, and sub-accounts have the
+   full API
+   ([sub-account authentication](https://docs.mailchannels.com/email-api/sub-accounts-authentication),
+   [DKIM](https://docs.mailchannels.com/email-api/configuring-dkim)).
+3. Have the customer add `include:relay.mailchannels.net` to the domain's SPF
+   record.
+4. Call `POST /check-domain` for the domain and store its DKIM, SPF and
+   Domain Lockdown verdicts; the application keeps the tenant's sending
+   disabled until they pass
+   ([domain check](https://docs.mailchannels.com/api-reference/dkim/dkim-spf-&-domain-lockdown-check)).
+   Asking the customer to publish DNS, re-checking, and gating sends are
+   application code.
 
 ## Provision safely
 

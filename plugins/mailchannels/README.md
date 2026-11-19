@@ -9,8 +9,11 @@ SDKs, or keep Laravel Mail, Symfony Mailer or Nodemailer and switch the
 transport. Every API send reports delivery, bounce and complaint events through
 signed webhooks, with managed DKIM, suppressions and one-click unsubscribe.
 Optional sub-accounts give each customer or agent its own credentials and
-limits when they send through your product. Outbound only; free developer plan
-for development and testing.
+limits when they send through your product, and a customer's own sending domain
+can be authorized for its sub-account alone with a Domain Lockdown record, given
+a MailChannels-managed DKIM key through the API, and checked for DKIM, SPF and
+Domain Lockdown verdicts. Outbound only; free developer plan for development
+and testing.
 
 ## Included skills
 

@@ -45,6 +45,16 @@ and [sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-li
 - The parent account's limit is the ceiling for the parent and all
   sub-accounts together.
 - Sub-accounts cannot create other sub-accounts.
+- A request made with a sub-account API key is treated as that sub-account,
+  and sub-accounts have access to the full API
+  ([sub-account authentication](https://docs.mailchannels.com/email-api/sub-accounts-authentication)).
+- A Domain Lockdown `auth=` field names one account or sub-account ID, and
+  MailChannels blocks mail from accounts the record does not list. A record
+  that lists only one sub-account restricts that domain to it
+  ([Domain Lockdown](https://docs.mailchannels.com/email-api/domain-lockdown)).
+- `POST /check-domain` returns `passed` or `failed` verdicts for DKIM, Domain
+  Lockdown and the sender domain's A or MX record, and an SPF verdict, for one
+  domain. It is configuration evidence, not a delivery guarantee.
 
 Express provider limits in the billing period documented by the product.
 Implement daily, hourly, per-action, or per-recipient budgets in the
