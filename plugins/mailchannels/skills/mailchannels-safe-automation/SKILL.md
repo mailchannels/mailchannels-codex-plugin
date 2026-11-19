@@ -40,6 +40,10 @@ per billing period, and the parent account's limit is the ceiling for all of
 them
 ([sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits)).
 
+MailChannels has no provider-side recipient allowlist: Domain Lockdown
+restricts which accounts may send as a domain, not who receives mail, so
+recipient scope is enforced in step 2 above.
+
 If a deployment chooses not to use sub-accounts, preserve the same
 application-level identity, budget, suspension, and audit boundaries.
 

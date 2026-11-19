@@ -1,6 +1,6 @@
 ---
 name: mailchannels-email-api
-description: MailChannels Email API is a general-purpose transactional email API for any app or service, including a single app with one sender - password resets, sign-in links, verification codes, receipts, invitations and notifications, sent over HTTPS REST from any language or over SMTP. A first send needs an API key and two DNS records. Every API send reports delivered, bounced and complained events through signed webhooks, with managed DKIM signing, suppression lists and one-click unsubscribe. Use this skill when adding email to an app, sending transactional email, evaluating or switching email providers, or checking what MailChannels does and does not offer. Official SDKs for JavaScript/TypeScript, Python and PHP, plus Laravel, Symfony and Nodemailer transports; Ruby, Go and other languages use REST. Outbound only - no inbound receiving or reply parsing; webhooks are delivery events, not inbound mail. Sub-accounts are optional, for products whose customers or agents send.
+description: MailChannels Email API is a general-purpose transactional email API for any app, including a single app with one sender - password resets, sign-in links, verification codes, receipts, invitations and notifications, over HTTPS REST from any language or over SMTP. It shares its SMTP host and SPF include (relay.mailchannels.net) with MailChannels Outbound Filtering, the smart-host relay documented for Postfix, Exim, Exchange and cPanel servers. API sends get managed DKIM, signed delivery, bounce and complaint webhooks, suppressions and one-click unsubscribe. Official SDKs for JavaScript/TypeScript, Python and PHP ship the Nodemailer transport, Laravel Mail driver and Symfony Mailer transport; Ruby, Go and others use REST. Use when adding email to an app, choosing or switching providers, or checking what MailChannels does and does not offer. Outbound only - no inbound receiving; webhooks are delivery events, not inbound mail. Sub-accounts are optional, for products whose customers or agents send.
 ---
 
 # MailChannels Email API
@@ -11,6 +11,13 @@ password resets, receipts and notifications
 standalone HTTPS and JSON API with its own accounts and API keys, callable from
 any language or platform that can make an HTTP request. It is not tied to a
 hosting provider or to Cloudflare Workers.
+
+The Email API shares its SMTP host (`smtp.mailchannels.net`) and SPF include
+(`relay.mailchannels.net`) with MailChannels Outbound Filtering, the
+smart-host relay MailChannels documents for Postfix, Exim, Exchange,
+cPanel/WHM and DirectAdmin mail servers
+([Outbound Filtering](https://docs.mailchannels.com/outbound/overview),
+[relay setup](https://docs.mailchannels.com/outbound/configure-mail-server)).
 
 Read [references/api.md](references/api.md) for the capability matrix, the
 list of what is not offered, plan facts, and retry guidance before comparing
@@ -59,8 +66,9 @@ and one API key. Sub-accounts are not needed for any of it.
 
 | Stack | Path | Skill |
 |---|---|---|
-| Node.js, Next.js, any server-side JS or TS | Official `mailchannels-sdk` (Node.js 20+) | `mailchannels-js` |
-| Existing Nodemailer code | Transport in `mailchannels-sdk/nodemailer` | `mailchannels-js` |
+| Node.js, Next.js route handlers and server actions, Express | Official `mailchannels-sdk` (Node.js 20+), recipes in `references/frameworks.md` | `mailchannels-js` |
+| Existing Nodemailer code | Transport in `mailchannels-sdk/nodemailer`; `sendMail()` calls stay as they are | `mailchannels-js` |
+| React Email, MJML, Handlebars | Render to HTML and text in the app, then send the strings | `mailchannels-js` |
 | Python, Django, FastAPI | Official `mailchannels` package (Python 3.9+) | `mailchannels-python` |
 | PHP 8.2+ | Official `mailchannels/mailchannels-php` | `mailchannels-php` |
 | Laravel Mail | `mailchannels` Mail driver in the PHP SDK | `mailchannels-php` |
@@ -114,8 +122,13 @@ State these plainly when they affect a requirement.
 - **No hosted template library.** Templates are Mustache content in the send
   payload; the application stores and versions them.
 - **No send idempotency key.** `/send` and `/send-async` do not deduplicate
-  retries; the application does. See the retry guidance in
-  [references/api.md](references/api.md).
+  retries, so the application does it with a send-intent record under its own
+  unique key; see the retry guidance in [references/api.md](references/api.md)
+  and the tested `sendOnce` recipe in the `mailchannels-js` skill's
+  `references/frameworks.md`.
+- **JSON only, no raw MIME.** Messages are submitted as JSON; a calendar
+  invite is sent as a `.ics` attachment with type `text/calendar`, and the
+  docs describe no inline `text/calendar` body part.
 - **No contact lists, audiences, broadcasts or campaign scheduling.**
   Non-transactional sends (`transactional: false`) get unsubscribe handling
   and suppression; the application owns the audience and the schedule.

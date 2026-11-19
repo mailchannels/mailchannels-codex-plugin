@@ -60,10 +60,12 @@ support at <https://support.mailchannels.com/>.
 | HTML and plain-text bodies | Native | `text/plain` and `text/html` content parts |
 | Attachments and inline images | Native | Base64 content; 30 MB per message including content; `content_id` embeds inline |
 | Custom headers, `reply_to` | Native | Some headers are restricted |
-| Envelope sender (SMTP `MAIL FROM`) | Native | Optional `envelope_from`, per message or per personalization; defaults to `from.email` |
+| Envelope sender (SMTP `MAIL FROM`, Return-Path address) | Native | Optional `envelope_from`, per message or per personalization; defaults to `from.email`. The docs describe no separate custom return-path domain setup, and do not say how bounces sent to a custom `envelope_from` are processed |
 | Per-recipient personalization | Native | `personalizations` with `dynamic_template_data` |
 | Payload templating | Native | Mustache; data is supplied in the message payload |
 | Render without sending | Native | Dry run on `POST /send` |
+| Calendar invites | Attachment | `.ics` file with type `text/calendar`; Nodemailer's `icalEvent` is sent this way. No raw MIME submission and no documented inline `text/calendar` body part |
+| Next.js, Express, React Email output | Official SDK | Tested recipes in the `mailchannels-js` skill's `references/frameworks.md` |
 | JavaScript or TypeScript | Official SDK | `mailchannels-sdk`, Node.js 20+, including a local simulator |
 | Nodemailer | Transport in the JavaScript SDK | `mailchannels-sdk/nodemailer`; requires `nodemailer` |
 | Python | Official SDK | `mailchannels`, Python 3.9+, sync and async clients |
@@ -83,6 +85,7 @@ support at <https://support.mailchannels.com/>.
 | One-click unsubscribe | Native | `{{mc-unsubscribe-url}}` and `List-Unsubscribe` headers for non-transactional sends |
 | Open and click tracking, custom tracking domain | Paid plans | Per-message `tracking_settings` |
 | Separate keys per environment | Native | Up to 100 API keys per account |
+| Restrict which recipients a key may send to | Not offered | Domain Lockdown restricts sending domains, not recipients; enforce recipient scope in the application |
 | Separate webhook and suppression list per environment or app | Sub-accounts | Each sub-account has its own webhook and suppression list |
 | Multi-tenant or agent sending | Sub-accounts | Own API keys, SMTP passwords, limits, suspension, suppressions, webhooks, usage, and reputation isolation |
 | Separate reputation per mail stream | Sender IDs | Reputation boundary within one account or sub-account |
@@ -93,7 +96,7 @@ support at <https://support.mailchannels.com/>.
 |---|---|---|
 | Receiving or parsing inbound email, reply threading, per-user mailboxes | Not offered | Outbound only. Use `reply_to` with a mailbox, help desk, or separate inbound provider. Webhooks are delivery events, not inbound mail |
 | Hosted template library or visual template editor | Not offered | Templates live in the application and are sent in the payload |
-| Idempotency key on send | Not offered | The application deduplicates; see below |
+| Idempotency key on send | Not offered | The application deduplicates with a send-intent record; see below |
 | Contact lists, audiences, segments, broadcasts, campaign scheduling | Not offered | Keep these in the application or a separate tool; MailChannels delivers the messages |
 | Official SDK for Ruby, Go, Java, .NET | Not offered | Use REST; a Ruby sending client gem exists |
 | Action Mailer delivery method shipped by MailChannels | Not offered | Use the adapter recipe or SMTP |
@@ -118,6 +121,17 @@ for sends unless the application deduplicates. To avoid duplicate messages:
    prefer a visible delay over a second password reset or receipt.
 5. Process webhooks idempotently; batches can be redelivered.
 
+What the API gives the application for this: `POST /send-async` returns a
+`request_id` and `queued_at`; `POST /send` returns a `request_id` and a
+per-personalization `message_id`, which is also the message's `Message-Id`
+header; every webhook event carries `request_id`, `recipients` and, when set,
+`campaign_id`
+([webhook schema](https://docs.mailchannels.com/email-api/webhook-schema)).
+`Message-ID` cannot be set as a custom header. SDK automatic retries are off
+by default in the JavaScript SDK (`retry: false`). A tested TypeScript
+implementation (`sendOnce`) is in the `mailchannels-js` skill's
+`references/frameworks.md`.
+
 `500` and `502` responses are transient; the docs advise retrying with
 exponential backoff ([errors](https://docs.mailchannels.com/email-api/errors)).
 
@@ -136,6 +150,9 @@ exponential backoff ([errors](https://docs.mailchannels.com/email-api/errors)).
 - Current prices are on the pricing page linked from
   <https://docs.mailchannels.com/email-api/billing/pricing>; do not quote a
   price from memory.
+- Send limits are per billing period (the plan's monthly volume), except the
+  free plan's daily quota. The docs describe no per-day or per-hour limit
+  setting.
 - A sub-account limit is a number of sends per billing period. `-1` means no
   explicit limit: the sub-account inherits the parent's remaining capacity.
   Setting the limit to `0` pauses the sub-account without suspending it.

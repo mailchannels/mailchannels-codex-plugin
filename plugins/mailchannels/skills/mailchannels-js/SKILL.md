@@ -1,6 +1,6 @@
 ---
 name: mailchannels-js
-description: Send transactional email from Node.js, Next.js, Express, NestJS, Remix or any server-side JavaScript or TypeScript app with MailChannels' official, typed `mailchannels-sdk` (npm, Node.js 20+) - password resets, sign-in links, verification codes, receipts, invitations and notifications. Use when a server-side JS or TS app sends email or evaluates an email provider, or already uses Nodemailer and can switch to the MailChannels transport without changing how messages are built. Covers direct and queued sends, HTML rendered by any template engine, attachments, Mustache payload templates, dry-run rendering, a local simulator for tests, signed delivery webhooks with a built-in signature verifier, unsubscribe handling, DKIM, domain checks, suppressions, metrics and optional sub-accounts. Server-side only, not for browser code. Outbound only - no inbound mail; webhooks are delivery events.
+description: Send transactional email from Node.js, Next.js route handlers and server actions, Express, NestJS or any server-side JavaScript or TypeScript app with MailChannels' official, typed `mailchannels-sdk` (npm, Node.js 20+) - password resets, sign-in links, verification codes, receipts and notifications. Use when a server-side JS or TS app sends email or evaluates an email provider. Existing Nodemailer code keeps its `sendMail()` calls by swapping in the SDK's own Nodemailer transport; React Email, MJML or Handlebars output is sent as rendered HTML and text. Recipes, run against the SDK's local simulator, for Next.js, Express, React Email, Nodemailer, `.ics` calendar invites, and duplicate-safe sends with an application send-intent record, since the API has no idempotency key. Covers queued and direct sends, attachments, Mustache templates, dry runs, signed delivery webhooks with a built-in verifier, DKIM, suppressions and optional sub-accounts. Outbound only - no inbound mail; webhooks are delivery events.
 ---
 
 # MailChannels JavaScript SDK
@@ -13,7 +13,18 @@ sub-accounts.
 
 Use the project's package manager, runtime conventions, mail abstraction, and
 test style. Read [references/recipes.md](references/recipes.md) for verified
-patterns and resource names.
+patterns and resource names, and
+[references/frameworks.md](references/frameworks.md) for recipes run against
+the SDK's local simulator:
+
+- a shared client module and a Next.js App Router route handler and server
+  action;
+- React Email components rendered to HTML and text and sent as strings;
+- an Express route;
+- keeping existing Nodemailer `sendMail()` code by swapping the transport;
+- `.ics` calendar invites, sent as `text/calendar` attachments;
+- `sendOnce`, a duplicate-safe send with an application send-intent record,
+  because the API takes no idempotency key.
 
 ## What the SDK gives a single app
 

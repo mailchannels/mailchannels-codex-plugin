@@ -22,11 +22,15 @@ MailChannels Email API is a transactional email API for any application:
 password resets, sign-in links, verification codes, receipts, invitations and
 notifications. Send over REST or SMTP with official JavaScript, Python and PHP
 SDKs, or keep Laravel Mail, Symfony Mailer or Nodemailer and switch the
-transport. Every API send reports delivery, bounce and complaint events through
-signed webhooks, with managed DKIM, suppressions and one-click unsubscribe.
-Optional sub-accounts give each customer or agent its own credentials and
-limits when they send through your product. Outbound only; free developer plan
-for development and testing.
+transport; Next.js, Express, React Email, Django and Rails recipes are
+included. Every API send reports delivery, bounce and complaint events through
+signed webhooks, with managed DKIM, suppressions and one-click unsubscribe. The
+Email API shares its SMTP host and SPF include with MailChannels Outbound
+Filtering, the smart-host relay MailChannels documents for Postfix, Exim,
+Exchange and cPanel mail servers. Optional sub-accounts give each customer or
+agent its own credentials and limits when they send through your product.
+Outbound only; the free developer plan, for development and testing, delivers
+only to verified recipients until a payment method is added.
 
 ## Starter prompts
 
