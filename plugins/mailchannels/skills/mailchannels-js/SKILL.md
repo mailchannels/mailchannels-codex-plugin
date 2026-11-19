@@ -46,8 +46,9 @@ not an option, call the REST API with `fetch`; see `mailchannels-rest`.
 5. Reuse the project's queue, logging, retry, and observability conventions.
    Treat API acceptance as submission, not delivery.
 6. Handle the SDK's `{ data, error }` result explicitly. The send endpoints
-   take no idempotency key: retry only when the application's own
-   deduplication makes a retry safe.
+   take no idempotency key, so key a send-intent record to the triggering
+   event (order, invitation or token ID) under a unique constraint, claim it
+   before sending, and store the returned `requestId` on it.
 7. Add unit and integration tests with the local simulator or mocked transport.
    Do not send live email from ordinary test suites.
 8. Before production, add sender-domain checks, signed webhook processing,

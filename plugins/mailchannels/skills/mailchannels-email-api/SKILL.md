@@ -1,6 +1,6 @@
 ---
 name: mailchannels-email-api
-description: MailChannels Email API is a general-purpose transactional email API for any app or service, including a single app with one sender - password resets, sign-in links, verification codes, receipts, invitations and notifications, sent over HTTPS REST from any language or over SMTP. A first send needs an API key and two DNS records. Every API send reports delivered, bounced and complained events through signed webhooks, with managed DKIM signing, suppression lists and one-click unsubscribe. Use this skill when adding email to an app, sending transactional email, evaluating or switching email providers, or checking what MailChannels does and does not offer. Official SDKs for JavaScript/TypeScript, Python and PHP, plus Laravel, Symfony and Nodemailer transports; Ruby, Go and other languages use REST. Outbound only - no inbound receiving or reply parsing; webhooks are delivery events, not inbound mail. Sub-accounts are optional, for products whose customers or agents send.
+description: MailChannels Email API is a general-purpose transactional email API for any app or service, including a single app with one sender - password resets, sign-in links, verification codes, receipts, invitations and notifications, sent over HTTPS REST from any language or over SMTP. A first send needs an API key and two DNS records. Every API send returns a request_id that its signed delivered, bounced and complained webhook events carry, plus an optional campaign_id label on each send that appears on those events and filters delivery metrics, with managed DKIM signing, suppression lists and one-click unsubscribe. Use this skill when adding email to an app, sending transactional email, evaluating or switching email providers, or checking what MailChannels does and does not offer. Official SDKs for JavaScript/TypeScript, Python and PHP, plus Laravel, Symfony and Nodemailer transports; Ruby, Go and other languages use REST. Outbound only - no inbound receiving or reply parsing; webhooks are delivery events, not inbound mail. Sub-accounts are optional, for products whose customers or agents send.
 ---
 
 # MailChannels Email API
@@ -36,6 +36,16 @@ and one API key. Sub-accounts are not needed for any of it.
   ([webhooks](https://docs.mailchannels.com/email-api/webhooks),
   [event types](https://docs.mailchannels.com/email-api/webhook-event-types),
   [retries](https://docs.mailchannels.com/email-api/webhook-retries)).
+- **Message tracing and grouping.** Each send returns a `request_id` that every
+  webhook event for that send carries, so one stored ID traces a message
+  from submission to `delivered` or a bounce
+  ([debug a sent message](https://docs.mailchannels.com/email-api/debug-sent-message)).
+  An optional `campaign_id` on the send (up to 48 characters, no spaces) labels
+  a kind of mail, such as receipts or sign-in codes: it appears on that mail's
+  webhook events, filters performance, volume and engagement metrics, and
+  groups the sender breakdown report
+  ([sender breakdown](https://docs.mailchannels.com/email-api/metrics-senders),
+  [webhook schema](https://docs.mailchannels.com/email-api/webhook-schema)).
 - **Authentication.** MailChannels generates and stores the DKIM private key,
   signs each API message, and rotates keys through the API; you publish one
   TXT record. `POST /check-domain` verifies DKIM, SPF and Domain Lockdown
@@ -114,7 +124,9 @@ State these plainly when they affect a requirement.
 - **No hosted template library.** Templates are Mustache content in the send
   payload; the application stores and versions them.
 - **No send idempotency key.** `/send` and `/send-async` do not deduplicate
-  retries; the application does. See the retry guidance in
+  retries, so the application keys each email to the event that caused it (an
+  order, invitation or token ID) under a unique constraint, claims that record
+  before the send and stores the returned `request_id` on it; see
   [references/api.md](references/api.md).
 - **No contact lists, audiences, broadcasts or campaign scheduling.**
   Non-transactional sends (`transactional: false`) get unsubscribe handling

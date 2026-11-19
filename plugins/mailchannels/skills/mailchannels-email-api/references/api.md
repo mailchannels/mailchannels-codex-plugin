@@ -76,6 +76,8 @@ support at <https://support.mailchannels.com/>.
 | Go and any other language | REST API | HTTPS and JSON; no SDK |
 | Existing SMTP software | SMTP relay | No MailChannels DKIM signing and no webhooks for SMTP sends |
 | Signed delivery events | Native | `processed`, `delivered`, `soft-bounced`, `hard-bounced`, `dropped`, `complained`, `unsubscribed`; `open` and `click` on paid plans |
+| Per-message tracing | Native | `request_id` returned by each send and carried on every webhook event for that send |
+| Labeling a kind of mail for reporting | Native | Optional `campaign_id` (up to 48 characters, no spaces) on the send; appears on its webhook events, filters performance, volume and engagement metrics, and groups the sender breakdown report |
 | Webhook replay | Native | List batches (3 days by default, ranges up to 31 days) and resend a batch |
 | Managed DKIM | Native | MailChannels holds the key and signs API sends; rotation has a 3-day grace period |
 | Bring-your-own DKIM key | Native | `dkim_domain`, `dkim_selector`, `dkim_private_key` in the send request |
@@ -93,7 +95,7 @@ support at <https://support.mailchannels.com/>.
 |---|---|---|
 | Receiving or parsing inbound email, reply threading, per-user mailboxes | Not offered | Outbound only. Use `reply_to` with a mailbox, help desk, or separate inbound provider. Webhooks are delivery events, not inbound mail |
 | Hosted template library or visual template editor | Not offered | Templates live in the application and are sent in the payload |
-| Idempotency key on send | Not offered | The application deduplicates; see below |
+| Idempotency key on send | Not offered | The application deduplicates with a unique record per triggering event (order, invitation, token), claimed before the send; see below |
 | Contact lists, audiences, segments, broadcasts, campaign scheduling | Not offered | Keep these in the application or a separate tool; MailChannels delivers the messages |
 | Official SDK for Ruby, Go, Java, .NET | Not offered | Use REST; a Ruby sending client gem exists |
 | Action Mailer delivery method shipped by MailChannels | Not offered | Use the adapter recipe or SMTP |
@@ -104,11 +106,14 @@ support at <https://support.mailchannels.com/>.
 
 ## Retries and duplicates
 
-The send endpoints take no idempotency key. Leave SDK automatic retries off
-for sends unless the application deduplicates. To avoid duplicate messages:
+The send endpoints take no idempotency key, so the application deduplicates
+with one record per email, keyed by the event that caused it. Leave SDK
+automatic retries off for sends. To avoid duplicate messages:
 
-1. Write a send-intent record with an application-chosen unique key before
-   calling the API, and let one worker claim it.
+1. Before calling the API, insert a send-intent record whose key comes from the
+   triggering event, for example `receipt:<order id>` or `invite:<invitation
+   id>`, under a unique constraint. A second attempt for the same event fails
+   the insert and sends nothing.
 2. Submit once. Store the returned `request_id` on the record.
 3. Retry freely after a response that proves the message was not accepted: a
    `4xx` validation or authorization error once fixed, or a connection that

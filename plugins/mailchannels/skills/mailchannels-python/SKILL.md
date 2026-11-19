@@ -45,8 +45,10 @@ for the Django email backend.
 5. Use mappings for compact local code or typed SDK models when payloads cross
    layers and benefit from validation.
 6. Catch only the typed exceptions whose handling differs. Respect retry
-   metadata. The send endpoints take no idempotency key: retry a send only when
-   the application's own deduplication makes it safe.
+   metadata. The send endpoints take no idempotency key, so key a send-intent
+   record to the triggering event (order, invitation or token ID) under a
+   unique constraint, claim it before sending, and store the returned
+   `request_id` on it.
 7. Test payload construction, error paths, and policy with mocks. Do not send
    live email from ordinary tests.
 8. Add sender-domain checks, signed idempotent webhooks, suppressions, and

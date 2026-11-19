@@ -29,8 +29,9 @@ logging, and test conventions. Read
    Use named arguments for constructors with optional fields.
 6. Catch the most specific SDK exception needed. Configure transport timeouts
    and application retries explicitly. The send endpoints take no idempotency
-   key: retry a send only when the application's own deduplication makes it
-   safe.
+   key, so key a send-intent record to the triggering event (order, invitation
+   or token ID) under a unique constraint, claim it before sending, and store
+   `$response->requestId()` on it.
 7. Test requests and error paths without live sends.
 8. Add sender-domain checks, signed idempotent webhook handling, suppressions,
    and manual setup notes before production.
