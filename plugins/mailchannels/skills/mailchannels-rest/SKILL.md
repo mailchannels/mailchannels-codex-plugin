@@ -1,6 +1,6 @@
 ---
 name: mailchannels-rest
-description: Send transactional email through MailChannels Email API with plain HTTPS and JSON, no SDK - from Go, Java, Kotlin, C#/.NET, Rust, Elixir, or from Cloudflare Workers, Deno, Bun and other `fetch` runtimes. Use when an app in a language without an official MailChannels SDK sends email or evaluates an email provider, when code runs in a serverless or edge runtime, or when a task needs the exact request and response shapes. One `POST` with an `X-Api-Key` header sends a password reset, verification code, receipt or notification; `/send-async` queues it and returns a `request_id` that later delivery webhooks carry. Covers the send payload, dry run, error codes, safe retries without an idempotency key, webhook enrollment and RFC 9421 Ed25519 signature verification, suppressions and the domain check. Outbound only - no inbound mail; webhooks are delivery events.
+description: Send transactional email through MailChannels Email API with plain HTTPS and JSON, no SDK - from Go, Java, Kotlin, C#/.NET, Rust, Elixir, or from Cloudflare Workers, Deno, Bun and other `fetch` runtimes. Use when an app in a language without an official MailChannels SDK sends email or evaluates an email provider, when code runs in a serverless or edge runtime, or when a task needs the exact request and response shapes. One `POST` with an `X-Api-Key` header sends a password reset, verification code, receipt or notification; `/send-async` queues it and returns a `request_id` that later delivery webhooks carry. Covers the send payload, a custom return-path (`envelope_from`), dry run, error codes, an outbox recipe for duplicate-safe retries (sends take no idempotency key), webhook enrollment and RFC 9421 Ed25519 signature verification, suppressions and the domain check. Outbound only - no inbound mail; webhooks are delivery events.
 ---
 
 # MailChannels Email API over REST
@@ -70,9 +70,11 @@ production checklist.
 
 Source: [errors](https://docs.mailchannels.com/email-api/errors).
 
-The send endpoints take no idempotency key. A timeout or dropped connection
-leaves the outcome unknown, so write a send-intent record before the request,
-submit once, and check delivery events for the recipient before sending again.
+The send endpoints take no idempotency key, so write an outbox row with a
+unique key before the request, submit once, and store the `request_id`;
+`mailchannels-email-api/references/send-once.md` has the table and the outcome
+rules. A timeout or dropped connection leaves the outcome unknown: check the
+stored delivery events for the recipient before sending again.
 
 ## Guardrails
 

@@ -18,7 +18,11 @@ sub-accounts, webhooks, quotas, or domain operations.
 1. Add a Domain Lockdown TXT record for each sending domain, including each
    subdomain: `_mailchannels.example.com TXT "v=mc1 auth=<account-id>"`
    ([Domain Lockdown](https://docs.mailchannels.com/email-api/domain-lockdown)).
-2. Add `include:relay.mailchannels.net` to the domain's single SPF record.
+2. Add `include:relay.mailchannels.net` to the domain's single SPF record. To
+   leave the root domain's SPF record untouched, send from a subdomain such as
+   `mail.example.com` and put the SPF include and Domain Lockdown record
+   there; SPF does not inherit from the parent domain, so each sending
+   subdomain needs its own records.
 3. Create a MailChannels-managed DKIM key through the API and
    publish the TXT record it returns. MailChannels then signs API sends for
    that domain. Rotate keys through the API; the old key keeps signing for a

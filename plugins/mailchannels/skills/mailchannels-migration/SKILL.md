@@ -23,6 +23,7 @@ needs another service or must stay where it is.
 | Per-recipient variables | `personalizations` with `dynamic_template_data` |
 | Verified sending domain | Domain Lockdown TXT record, SPF include, and a DKIM key |
 | Sender address | `from`, on an authorized domain |
+| Custom MAIL FROM or return-path domain | `envelope_from`, on a domain with Domain Lockdown and SPF records |
 | Event webhooks | Signed delivery-event webhooks; update handlers for the MailChannels event schema |
 | Bounce and complaint suppressions | Suppression list with `transactional` and `non-transactional` types |
 | Unsubscribe links | `{{mc-unsubscribe-url}}` and `List-Unsubscribe` headers on non-transactional sends |
@@ -38,7 +39,8 @@ needs another service or must stay where it is.
 | Inbound receiving, inbound routes, reply parsing, `email.received` events | Keep or add a separate inbound service. MailChannels is outbound only and its webhooks are delivery events |
 | Provider-hosted templates and visual editors | Export templates into application code or a template store; send rendered content or Mustache in the payload |
 | Contact lists, audiences, segments, campaigns, broadcasts | Move to an external list or campaign tool; MailChannels delivers the messages |
-| Idempotency keys on send | Deduplicate in the application |
+| Idempotency keys on send | Not offered; deduplicate in the application with the outbox table in `mailchannels-email-api/references/send-once.md` |
+| Raw MIME submission (for example SES `SendRawEmail`) | Rebuild the message as a JSON payload; the API does not accept raw MIME |
 | Region selection | MailChannels accounts are not regional; no region-pinned processing is documented |
 | A Ruby, Go, Java, or .NET SDK | Use REST; official SDKs are JavaScript, Python, and PHP |
 
@@ -70,7 +72,10 @@ From the [Migration Center](https://docs.mailchannels.com/email-api/migration-ce
 ## Keeping the code change small
 
 - Laravel, Symfony, and Nodemailer apps switch the transport and keep their
-  message-building code (`mailchannels-php`, `mailchannels-js`).
+  message-building code (`mailchannels-php`, `mailchannels-js`); the
+  transports ship in the official SDK packages and send mail only.
+- Next.js, Express, and React Email apps replace the provider call inside one
+  send function; `mailchannels-js` has tested code for each.
 - Django apps can swap `EMAIL_BACKEND` with the recipe in
   `mailchannels-python`; Rails apps can swap the Action Mailer delivery method
   with the recipe in `mailchannels-ruby`.

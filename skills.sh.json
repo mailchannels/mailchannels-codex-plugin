@@ -4,7 +4,7 @@
   "groupings": [
     {
       "title": "Send email from your app",
-      "description": "Password resets, sign-in links, receipts, invitations and notifications over REST or SMTP, with the official JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports, Django and Rails recipes, and plain HTTPS for every other language.",
+      "description": "Password resets, sign-in links, receipts, invitations and notifications over REST or SMTP, with the official JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports, Next.js, Express, React Email, Django and Rails recipes, and plain HTTPS for every other language.",
       "skills": [
         "mailchannels-email-api",
         "mailchannels-js",

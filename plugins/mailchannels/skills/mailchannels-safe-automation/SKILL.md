@@ -40,6 +40,14 @@ per billing period, and the parent account's limit is the ceiling for all of
 them
 ([sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits)).
 
+The MailChannels docs describe no provider-side recipient allowlist or
+recipient-domain restriction for an API key or sub-account, so the trusted
+application checks every recipient against its own allowlist before it submits.
+A sub-account's suppression list is its own: an entry on the parent's list does
+not apply to a sub-account unless the parent creates it with
+`add_to_sub_accounts`
+([managing suppressions](https://docs.mailchannels.com/email-api/suppression-api-actions)).
+
 If a deployment chooses not to use sub-accounts, preserve the same
 application-level identity, budget, suspension, and audit boundaries.
 
@@ -52,7 +60,9 @@ that address. Signed webhooks carry delivery events (`delivered`, bounces,
 complaints, unsubscribes) for mail the agent sent, never reply content
 ([inbound email and replies](https://docs.mailchannels.com/email-api/inbound-email-replies)).
 The send endpoints take no idempotency key, so the immutable send intent above
-is what prevents an agent's retry from sending twice.
+is what prevents an agent's retry from sending twice;
+`mailchannels-email-api/references/send-once.md` has a tested table and worker
+function for it.
 
 ## Fail closed
 

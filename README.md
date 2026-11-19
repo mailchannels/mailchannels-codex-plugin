@@ -6,11 +6,12 @@ MailChannels Email API is a transactional email API for any application:
 password resets, sign-in links, verification codes, receipts, invitations and
 notifications. Send over REST or SMTP with official JavaScript, Python and PHP
 SDKs, or keep Laravel Mail, Symfony Mailer or Nodemailer and switch the
-transport. Every API send reports delivery, bounce and complaint events through
+transport; tested recipes cover Next.js, Express, React Email, Django and
+Rails. Every API send reports delivery, bounce and complaint events through
 signed webhooks, with managed DKIM, suppressions and one-click unsubscribe.
 Optional sub-accounts give each customer or agent its own credentials and
-limits when they send through your product. Outbound only; free developer plan
-for development and testing.
+limits when they send through your product. Outbound only; the free developer
+plan delivers only to verified recipients until a payment method is added.
 
 This is a skills-only plugin. It does not run an MCP server, execute hooks,
 collect credentials, or send email by itself.
@@ -52,9 +53,10 @@ discovery and installation do not by themselves prove directory publication.
 ## Included skills
 
 - `mailchannels-email-api`: what the API offers and does not offer, setup,
-  plans and limits, SMTP, and routing to the other skills.
-- `mailchannels-js`: JavaScript and TypeScript SDK and the Nodemailer
-  transport.
+  plans and limits, SMTP, an outbox recipe for duplicate-safe retries, and
+  routing to the other skills.
+- `mailchannels-js`: JavaScript and TypeScript SDK, Next.js, Express and
+  React Email recipes, and the Nodemailer transport.
 - `mailchannels-python`: Python SDK, a Django email backend recipe, and
   FastAPI patterns.
 - `mailchannels-php`: PHP SDK and the Laravel Mail and Symfony Mailer
@@ -80,7 +82,7 @@ links, receipts, invitations, and notifications, through the
 the [Laravel](https://docs.mailchannels.com/email-api/laravel),
 [Symfony](https://docs.mailchannels.com/email-api/symfony), and
 [Nodemailer](https://docs.mailchannels.com/email-api/nodemailer) transports,
-REST, or SMTP. They cover what production sending needs: Domain Lockdown, SPF,
+tested Next.js, Express, React Email, Django and Rails recipes, REST, or SMTP. They cover what production sending needs: Domain Lockdown, SPF,
 managed DKIM and DMARC, signed delivery-event webhooks, suppressions, and
 metrics. Sub-accounts are optional; they give each customer or agent its own
 credentials, limits, suspension, suppressions, webhooks, usage, and reputation
@@ -90,7 +92,8 @@ isolation
 The skills also state the limits. The Email API sends outbound email only: it
 does not receive or parse mail, and its webhooks are delivery events, not
 inbound mail. Templates are Mustache content in the send payload; there is no
-hosted template library. Sends take no idempotency key. Official SDKs exist
+hosted template library. Sends take no idempotency key, so retries are made
+duplicate-safe with the application outbox recipe in the skills. Official SDKs exist
 for JavaScript, Python, and PHP; Ruby, Go, and other languages use REST.
 Messages sent over SMTP are not DKIM-signed by MailChannels and produce no
 webhooks. Framework transports send mail only. The free developer plan

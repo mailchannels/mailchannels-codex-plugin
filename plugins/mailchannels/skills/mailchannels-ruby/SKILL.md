@@ -47,9 +47,10 @@ webhooks ([SMTP](https://docs.mailchannels.com/email-api/smtp-sending)).
 5. Send from jobs with `deliver_later`. The gem makes one synchronous `/send`
    call per message, and the docs note that evaluation can take several
    seconds per message.
-6. The API takes no idempotency key, and Active Job retries failed jobs.
-   Do not auto-retry a delivery job after a timeout without the application's
-   own deduplication.
+6. The API takes no idempotency key, and Active Job retries failed jobs, so
+   have the delivery job claim an outbox row before it sends; the table and
+   outcome rules are in `mailchannels-email-api/references/send-once.md` (its
+   code is TypeScript and Python, not Ruby).
 7. Receive delivery events in an ordinary controller. Verify the RFC 9421
    Ed25519 signature on the raw body before trusting the payload
    ([webhooks](https://docs.mailchannels.com/email-api/webhooks)).

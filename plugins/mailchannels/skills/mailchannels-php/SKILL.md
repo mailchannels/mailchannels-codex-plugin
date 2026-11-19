@@ -29,8 +29,9 @@ logging, and test conventions. Read
    Use named arguments for constructors with optional fields.
 6. Catch the most specific SDK exception needed. Configure transport timeouts
    and application retries explicitly. The send endpoints take no idempotency
-   key: retry a send only when the application's own deduplication makes it
-   safe.
+   key, so make job retries duplicate-safe with the outbox table in
+   `mailchannels-email-api/references/send-once.md`: enqueue a row keyed on the
+   business event and have the queued job claim it before sending.
 7. Test requests and error paths without live sends.
 8. Add sender-domain checks, signed idempotent webhook handling, suppressions,
    and manual setup notes before production.
@@ -69,6 +70,17 @@ objects keep working. Both need a PSR-18 client and PSR-17 factories, such as
   ([Symfony](https://docs.mailchannels.com/email-api/symfony)). The package
   also has an optional parser that turns verified webhook requests into
   Symfony `RemoteEvent` objects.
+
+## Existing mailer interface or `mail()`
+
+When the app already sends through its own interface or wrapper, keep that
+interface and write one implementation of it that builds the array payload in
+[references/recipes.md](references/recipes.md) and calls
+`$client->emails->queue()`; callers do not change. The SDK has no drop-in
+replacement for PHP's `mail()` function, so replace each `mail()` call with a
+call to that wrapper. Software that can only speak SMTP can point at
+`smtp.mailchannels.net` on port 587 instead; SMTP sends are not DKIM-signed
+by MailChannels and produce no webhooks.
 
 ## Guardrails
 

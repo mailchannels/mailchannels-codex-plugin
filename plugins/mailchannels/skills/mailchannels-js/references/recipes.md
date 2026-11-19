@@ -62,10 +62,18 @@ const { data, error } = await mailchannels.emails.queue({
 
 ## Avoid duplicate sends
 
-The API takes no idempotency key. Record a send intent with an
+The API takes no idempotency key, so record a send intent with an
 application-chosen unique key before calling the SDK, submit once, and store
-`data.requestId` on that record. After a timeout the outcome is unknown; check
-the delivery events for that recipient before submitting again.
+`data.requestId` on that record; `mailchannels-email-api/references/send-once.md`
+has a tested table and `deliverEmail` function that do this. After a timeout
+the outcome is unknown; check the stored delivery events for that recipient
+before submitting again.
+
+## Next.js, Express, React Email, Nodemailer
+
+See [frameworks.md](frameworks.md) for a Next.js route handler and server
+action, Express routes with a webhook receiver, React Email rendering, and the
+Nodemailer transport swap.
 
 ## Validate rendering
 

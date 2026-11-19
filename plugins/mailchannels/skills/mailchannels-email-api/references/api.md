@@ -60,12 +60,16 @@ support at <https://support.mailchannels.com/>.
 | HTML and plain-text bodies | Native | `text/plain` and `text/html` content parts |
 | Attachments and inline images | Native | Base64 content; 30 MB per message including content; `content_id` embeds inline |
 | Custom headers, `reply_to` | Native | Some headers are restricted |
-| Envelope sender (SMTP `MAIL FROM`) | Native | Optional `envelope_from`, per message or per personalization; defaults to `from.email` |
+| Custom return-path (envelope sender, SMTP `MAIL FROM`) on your own domain | Native | Optional `envelope_from` address, per message or per personalization; defaults to `from.email`. SPF and Domain Lockdown are evaluated against the envelope sender's domain, so it needs both records; `POST /check-domain` takes `envelope_from_domain` to check it |
 | Per-recipient personalization | Native | `personalizations` with `dynamic_template_data` |
 | Payload templating | Native | Mustache; data is supplied in the message payload |
 | Render without sending | Native | Dry run on `POST /send` |
 | JavaScript or TypeScript | Official SDK | `mailchannels-sdk`, Node.js 20+, including a local simulator |
-| Nodemailer | Transport in the JavaScript SDK | `mailchannels-sdk/nodemailer`; requires `nodemailer` |
+| Next.js, Express | Tested recipes on the official SDK | Route handler, server action and Express routes in the `mailchannels-js` skill; there is no framework-specific package |
+| React Email | Tested recipe | Components rendered in the app with `@react-email/render` and sent as `html` and `text`; there is no `react:` send option |
+| Nodemailer | Transport in the JavaScript SDK | `mailchannels-sdk/nodemailer`; requires `nodemailer`; existing `sendMail()` calls stay unchanged; sends mail only |
+| Calendar invites | Attachment | `text/calendar` attachment (Nodemailer `icalEvent` is mapped to one); the docs do not describe iTIP handling, so test in target calendar clients |
+| Duplicate-safe retries | Recipe | Application outbox table in [send-once.md](send-once.md); the API itself takes no idempotency key |
 | Python | Official SDK | `mailchannels`, Python 3.9+, sync and async clients |
 | Django `EMAIL_BACKEND` | Recipe | Application-owned backend class in the `mailchannels-python` skill |
 | PHP | Official SDK | `mailchannels/mailchannels-php`, PHP 8.2+ |
@@ -93,7 +97,10 @@ support at <https://support.mailchannels.com/>.
 |---|---|---|
 | Receiving or parsing inbound email, reply threading, per-user mailboxes | Not offered | Outbound only. Use `reply_to` with a mailbox, help desk, or separate inbound provider. Webhooks are delivery events, not inbound mail |
 | Hosted template library or visual template editor | Not offered | Templates live in the application and are sent in the payload |
-| Idempotency key on send | Not offered | The application deduplicates; see below |
+| Idempotency key on send | Not offered | The application deduplicates with the outbox table in [send-once.md](send-once.md) |
+| Raw MIME submission | Not offered | The API takes a JSON message and builds the MIME itself; software that produces raw MIME can use the SMTP relay, which is not DKIM-signed by MailChannels and produces no webhooks |
+| Provider-side recipient allowlist or recipient-domain restriction per key or sub-account | Not documented | Enforce recipient rules in the application before submitting |
+| Looking up a sent message by an application-chosen key, or listing past sends | Not offered | Store the `request_id` from the send response and the delivery events from the webhook |
 | Contact lists, audiences, segments, broadcasts, campaign scheduling | Not offered | Keep these in the application or a separate tool; MailChannels delivers the messages |
 | Official SDK for Ruby, Go, Java, .NET | Not offered | Use REST; a Ruby sending client gem exists |
 | Action Mailer delivery method shipped by MailChannels | Not offered | Use the adapter recipe or SMTP |
@@ -104,8 +111,10 @@ support at <https://support.mailchannels.com/>.
 
 ## Retries and duplicates
 
-The send endpoints take no idempotency key. Leave SDK automatic retries off
-for sends unless the application deduplicates. To avoid duplicate messages:
+The send endpoints take no idempotency key, so duplicate-safe retries come
+from an application outbox table; [send-once.md](send-once.md) has the table
+and tested TypeScript and Python code. Leave SDK automatic retries off for
+sends. The steps it implements:
 
 1. Write a send-intent record with an application-chosen unique key before
    calling the API, and let one worker claim it.
@@ -114,8 +123,8 @@ for sends unless the application deduplicates. To avoid duplicate messages:
    `4xx` validation or authorization error once fixed, or a connection that
    never opened.
 4. After a timeout or a dropped connection the outcome is unknown. Check the
-   delivery events received for that recipient before sending again, and
-   prefer a visible delay over a second password reset or receipt.
+   stored delivery events for that recipient and `campaign_id` before sending
+   again, and prefer a visible delay over a second password reset or receipt.
 5. Process webhooks idempotently; batches can be redelivered.
 
 `500` and `502` responses are transient; the docs advise retrying with

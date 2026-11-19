@@ -138,9 +138,9 @@ curl -X POST https://api.mailchannels.net/tx/v1/send-async \
 | `content` | Array of `{ "type": "text/plain" or "text/html", "value" }`; add `"template_type": "mustache"` to render that part as a template |
 | `attachments` | Array of `{ "filename", "type", "content" }` with base64 `content`; `content_id` embeds inline; up to 1,000 attachments and 30 MB per message |
 | `headers` | Custom headers; some are restricted |
-| `envelope_from` | Optional envelope sender; defaults to `from.email` |
+| `envelope_from` | Optional envelope sender (`{ "email" }`), the SMTP `MAIL FROM` shown as `Return-Path`; defaults to `from.email`. Its domain needs Domain Lockdown and SPF records, because both are evaluated against the envelope sender's domain |
 | `transactional` | `false` marks a non-transactional message, which gets unsubscribe handling |
-| `campaign_id` | Up to 48 characters, no spaces; echoed in webhook events |
+| `campaign_id` | Up to 48 characters, no spaces; echoed in webhook events, which makes it usable for matching events to a message class when reconciling a send whose response was lost |
 | `tracking_settings` | Open and click tracking; paid plans |
 | `dkim_domain`, `dkim_selector`, `dkim_private_key` | Select a managed key or supply your own |
 
@@ -151,7 +151,7 @@ plan.
 
 | Task | Request |
 |---|---|
-| Check a domain's DKIM, SPF, and Domain Lockdown | `POST /check-domain` with `{ "domain": "example.com" }` |
+| Check a domain's DKIM, SPF, and Domain Lockdown | `POST /check-domain` with `{ "domain": "example.com" }`; add `"envelope_from_domain"` when the envelope sender's domain differs |
 | Create a managed DKIM key | `POST /domains/{domain}/dkim-keys` with `{ "selector": "mc1" }` |
 | Enroll a webhook endpoint | `POST /webhook?endpoint=<https-url>` (201; 409 if one is already enrolled) |
 | Send a test event to the webhook | `POST /webhook/validate` |

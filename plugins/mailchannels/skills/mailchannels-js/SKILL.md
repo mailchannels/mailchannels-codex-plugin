@@ -1,6 +1,6 @@
 ---
 name: mailchannels-js
-description: Send transactional email from Node.js, Next.js, Express, NestJS, Remix or any server-side JavaScript or TypeScript app with MailChannels' official, typed `mailchannels-sdk` (npm, Node.js 20+) - password resets, sign-in links, verification codes, receipts, invitations and notifications. Use when a server-side JS or TS app sends email or evaluates an email provider, or already uses Nodemailer and can switch to the MailChannels transport without changing how messages are built. Covers direct and queued sends, HTML rendered by any template engine, attachments, Mustache payload templates, dry-run rendering, a local simulator for tests, signed delivery webhooks with a built-in signature verifier, unsubscribe handling, DKIM, domain checks, suppressions, metrics and optional sub-accounts. Server-side only, not for browser code. Outbound only - no inbound mail; webhooks are delivery events.
+description: Send transactional email from Next.js, Express or any server-side JavaScript or TypeScript app with MailChannels' official `mailchannels-sdk` (npm, Node.js 20+) - password resets, sign-in links, verification codes, receipts, invitations and notifications. Use when a server-side JS or TS app sends email or evaluates an email provider. Tested recipes - a Next.js App Router route handler and server action, Express routes, and React Email components rendered with `@react-email/render`. Existing Nodemailer code keeps every `sendMail()` call and swaps only the transport, which ships in the official SDK as `mailchannels-sdk/nodemailer`. Covers queued and direct sends, attachments, calendar invites, Mustache payload templates, dry runs, a local simulator for tests, signed delivery webhooks with a built-in verifier, an outbox recipe for duplicate-safe retries (sends take no idempotency key), DKIM, suppressions and optional sub-accounts. Server-side only. Outbound only - no inbound mail; webhooks are delivery events.
 ---
 
 # MailChannels JavaScript SDK
@@ -13,7 +13,20 @@ sub-accounts.
 
 Use the project's package manager, runtime conventions, mail abstraction, and
 test style. Read [references/recipes.md](references/recipes.md) for verified
-patterns and resource names.
+patterns and resource names, and
+[references/frameworks.md](references/frameworks.md) for tested Next.js,
+Express, React Email and Nodemailer code.
+
+## Framework paths
+
+| App | Path | Where |
+|---|---|---|
+| Next.js App Router | Route handler or server action calls the SDK with `runtime = 'nodejs'`; MailChannels publishes no Next.js-specific package | [frameworks.md](references/frameworks.md) |
+| React Email templates | Render the component with `@react-email/render`, pass `html` and `text`; there is no `react:` send option | [frameworks.md](references/frameworks.md) |
+| Express, Fastify, NestJS, Remix | SDK call in a route or service, plus a raw-body webhook route | [frameworks.md](references/frameworks.md) |
+| Existing Nodemailer code | Swap `createTransport` for the transport in `mailchannels-sdk/nodemailer`; `sendMail()` call sites stay unchanged; the transport sends mail only | [frameworks.md](references/frameworks.md) |
+| Auth libraries with a send-email callback | Call `emails.queue()` inside the callback | [frameworks.md](references/frameworks.md) |
+| Edge runtimes without Node.js APIs | `fetch` to the REST API; the SDK is documented for Node.js 20+ | `mailchannels-rest` |
 
 ## What the SDK gives a single app
 
@@ -46,8 +59,9 @@ not an option, call the REST API with `fetch`; see `mailchannels-rest`.
 5. Reuse the project's queue, logging, retry, and observability conventions.
    Treat API acceptance as submission, not delivery.
 6. Handle the SDK's `{ data, error }` result explicitly. The send endpoints
-   take no idempotency key: retry only when the application's own
-   deduplication makes a retry safe.
+   take no idempotency key, so make retries duplicate-safe with the tested
+   outbox table and `deliverEmail` function in
+   `mailchannels-email-api/references/send-once.md`.
 7. Add unit and integration tests with the local simulator or mocked transport.
    Do not send live email from ordinary test suites.
 8. Before production, add sender-domain checks, signed webhook processing,
@@ -63,7 +77,10 @@ to `nodemailer.createTransport`
 maps `from`, `to`, `cc`, `bcc`, `replyTo`, `subject`, `text`, `html`,
 `headers`, `attachments`, `icalEvent`, and `dkim`; it queues by default
 (`sendMode: 'async'`). It needs SDK 1.4.0 or later and only sends mail; use the
-SDK client for sub-accounts, DKIM keys, and webhooks.
+SDK client for sub-accounts, DKIM keys, and webhooks. The transport is part of
+the official SDK package, not a separate or community package.
+[references/frameworks.md](references/frameworks.md) has the before-and-after
+code and what the transport does with attachments and `icalEvent`.
 
 ## Guardrails
 
