@@ -1,6 +1,6 @@
 ---
 name: mailchannels-safe-automation
-description: Build controlled MailChannels sending for AI agents, autonomous workflows, user-generated content, or customer-managed senders. Use when a semi-trusted actor can choose recipients, sender identity, content, or volume and the system needs authorization, consent checks, budgets, approvals, audit trails, suppressions, signed delivery feedback, per-sender credentials, or independent suspension. A single app whose users write the content needs no sub-accounts - a suppression entry blocks mail to that recipient, and non-transactional mail (`transactional: false`) gets automatic `List-Unsubscribe` headers. When agents or customers are separate senders, sub-accounts give each its own keys, limits, suspension, suppressions, webhooks and reputation. The send API takes no idempotency key, so the skill's send-intent record, claimed once by a worker, is what keeps a held or retried message from going out twice. Outbound only - an agent that must read replies needs a separate inbound provider; webhooks are delivery events.
+description: Build controlled MailChannels sending for AI agents, autonomous workflows, user-generated content, or customer-managed senders. Use when a semi-trusted actor can choose recipients, sender identity, content, or volume and the system needs authorization, consent checks, budgets, approvals, audit trails, suppressions, signed delivery feedback, per-sender credentials, or independent suspension. Sub-accounts are optional when one application and team own the traffic - a suppression entry blocks mail to that recipient, and non-transactional mail (`transactional: false`) gets automatic `List-Unsubscribe` headers. When agents or customers are separate senders, sub-accounts give each its own keys, limits, suspension, suppressions, webhooks and reputation. The send API takes no idempotency key, so the skill's send-intent record, claimed once by a worker, is what keeps a held or retried message from going out twice. Outbound only - an agent that must read replies needs a separate inbound provider; webhooks are delivery events.
 ---
 
 # Safe Automated Email with MailChannels
@@ -40,8 +40,9 @@ per billing period, and the parent account's limit is the ceiling for all of
 them
 ([sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits)).
 
-Sub-accounts are not required. A single application whose users or community
-members write the content sends from one account: moderation state, content
+Sub-accounts are optional. When one application and team own the traffic,
+one account can send it
+([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)): moderation state, content
 sanitizing, and per-author rate limits live in the application, and
 MailChannels supplies the recipient-side controls. A suppression entry blocks
 mail to that recipient (`transactional` entries block all mail,
@@ -59,10 +60,9 @@ suspension, and audit boundaries either way.
 ## Know the boundary
 
 MailChannels Email API sends mail and reports what happened to it. It does not
-receive mail. An agent that needs to read replies, own a mailbox, or follow
-an incoming conversation needs a separate inbound provider or mailbox; set
-`reply_to` to that address. An outgoing reply can still carry `In-Reply-To`
-and `References` as custom headers so the recipient's mail client threads it. Signed webhooks carry delivery events (`delivered`, bounces,
+receive mail. An agent that needs to read replies, own a mailbox, or thread a
+conversation needs a separate inbound provider or mailbox; set `reply_to` to
+that address. Signed webhooks carry delivery events (`delivered`, bounces,
 complaints, unsubscribes) for mail the agent sent, never reply content
 ([inbound email and replies](https://docs.mailchannels.com/email-api/inbound-email-replies)).
 The send endpoints take no idempotency key, so the immutable send intent above

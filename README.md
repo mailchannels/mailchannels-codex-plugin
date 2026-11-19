@@ -11,10 +11,8 @@ signed webhooks, with managed DKIM, suppressions and one-click unsubscribe.
 Optional sub-accounts give each customer, tenant or agent that sends through
 your product its own API keys, send limit, suspension and activation through
 the API, suppression list, delivery webhooks, usage reporting and reputation
-isolation, and each tenant can send from its own domain: a Domain Lockdown
-record restricts the domain to that tenant's sub-account, DKIM keys are created
-per domain through the API, and the domain-check API returns pass or fail
-verdicts for the domain's DKIM, SPF and Domain Lockdown records. Outbound only;
+isolation, and each tenant can send from its own domain: a Domain Lockdown record that names only that tenant's sub-account restricts the domain to it, DKIM keys are created
+per domain through the API, and the domain-check API returns verdicts for the domain's DKIM, SPF and Domain Lockdown records. Outbound only;
 free developer plan for development and testing.
 
 This is a skills-only plugin. It does not run an MCP server, execute hooks,

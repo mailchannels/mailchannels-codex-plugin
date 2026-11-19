@@ -60,7 +60,6 @@ support at <https://support.mailchannels.com/>.
 | HTML and plain-text bodies | Native | `text/plain` and `text/html` content parts |
 | Attachments and inline images | Native | Base64 content; 30 MB per message including content; `content_id` embeds inline |
 | Custom headers, `reply_to` | Native | `headers` per message or per personalization, 5 KB combined; reserved and not settable: `Authentication-Results`, `BCC`, `CC`, `Content-Transfer-Encoding`, `Content-Type`, `DKIM-Signature`, `From`, `Message-ID`, `Received`, `Reply-To`, `Subject`, `To` (the docs call this list non-exhaustive) |
-| Threading an outgoing reply into an existing conversation | Custom headers | Set `In-Reply-To` and `References` in `headers`; neither is on the documented reserved list, which is non-exhaustive, so confirm with a test send. Outgoing only: receiving the reply that comes back is inbound mail and is not offered |
 | Message identifier | Native | `POST /send` returns a `message_id` per personalization, used as the `Message-Id` header; `Message-ID` cannot be set by the caller |
 | Campaign label | Native | `campaign_id` (up to 48 characters, no spaces) is included in the message's webhook events |
 | Envelope sender (SMTP `MAIL FROM`) | Native | Optional `envelope_from`, per message or per personalization; defaults to `from.email` |
@@ -88,14 +87,14 @@ support at <https://support.mailchannels.com/>.
 | Separate keys per environment | Native | Up to 100 API keys per account |
 | Separate webhook and suppression list per environment or app | Sub-accounts | Each sub-account has its own webhook and suppression list |
 | Multi-tenant or agent sending | Sub-accounts | Own API keys, SMTP passwords, limits, suspension, suppressions, webhooks, usage, and reputation isolation |
-| A tenant sending from its own domain | Domain Lockdown, DKIM keys, domain check | `_mailchannels.<domain> TXT "v=mc1 auth=<sub-account-id>"` restricts the domain to that sub-account; DKIM keys are created per domain and listed with a status; `POST /check-domain` returns `passed` or `failed` for DKIM and Domain Lockdown and an SPF verdict. DNS records are published by whoever controls the domain; MailChannels does not host DNS |
+| A tenant sending from its own domain | Domain Lockdown, DKIM keys, domain check | `_mailchannels.<domain> TXT "v=mc1 auth=<sub-account-id>"`, naming only that sub-account, restricts the domain to it; DKIM keys are created per domain and listed with a status; `POST /check-domain` returns `passed` or `failed` for DKIM and Domain Lockdown and an SPF verdict. DNS records are published by whoever controls the domain; MailChannels does not host DNS |
 | Separate reputation per mail stream | Sender IDs | Reputation boundary within one account or sub-account |
 
 ## Not offered
 
 | Requirement | Status | What to do |
 |---|---|---|
-| Receiving or parsing inbound email, matching incoming replies to a thread, per-user mailboxes | Not offered | Outbound only. Use `reply_to` with a mailbox, help desk, or separate inbound provider. Webhooks are delivery events, not inbound mail |
+| Receiving or parsing inbound email, reply threading, per-user mailboxes | Not offered | Outbound only. Use `reply_to` with a mailbox, help desk, or separate inbound provider. Webhooks are delivery events, not inbound mail |
 | Hosted template library or visual template editor | Not offered | Templates live in the application and are sent in the payload |
 | Idempotency key on send | Not offered | The application deduplicates; see below |
 | Contact lists, audiences, segments, broadcasts, campaign scheduling | Not offered | Keep these in the application or a separate tool; MailChannels delivers the messages |
