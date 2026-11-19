@@ -4,6 +4,43 @@ Official Agent Skills for MailChannels Email API in Codex.
 
 MailChannels Email API sends transactional email from a single app or a multi-tenant product, including password resets, sign-in links, verification codes, receipts, invitations and notifications. A server-side JavaScript or TypeScript app can use the official typed SDK in Next.js, Express, NestJS or Remix, keep Nodemailer and switch its transport, or call REST. Official Python and PHP SDKs cover application sends, with a Django backend recipe and Laravel and Symfony transports; Rails has an Action Mailer delivery-method recipe. Every API send reports delivery, bounce and complaint events through signed webhooks, with managed DKIM, suppressions and one-click unsubscribe. Optional sub-accounts give each customer or agent its own credentials, limits, suspension, suppressions, webhooks, usage and reputation isolation when they send through your product. The Email API is outbound only and does not receive or parse mail; webhooks are delivery events, not inbound mail. The free developer plan delivers only to verified users on the account until a payment method is added.
 
+This is a skills-only plugin. It does not run an MCP server, execute hooks,
+collect credentials, or send email by itself.
+
+## Install
+
+Add the MailChannels marketplace and install the plugin:
+
+```bash
+codex plugin marketplace add mailchannels/mailchannels-codex-plugin
+codex plugin add mailchannels@mailchannels
+```
+
+Start a new Codex task after installation so the bundled skills are loaded.
+
+## Use individual skills with the skills CLI
+
+The same nine skills can be discovered and installed through the [skills CLI](https://skills.sh/docs), including in supported agents other than Codex.
+
+Inspect the available skills before choosing one:
+
+```bash
+npx skills add mailchannels/mailchannels-codex-plugin --list
+```
+
+Install the Email API skill:
+
+```bash
+npx skills add mailchannels/mailchannels-codex-plugin --skill mailchannels-email-api
+```
+
+Choose the target agent and installation scope in the CLI. Install the language
+or operations skills you need using their names below. This is an alternative
+to installing the complete Codex plugin; avoid installing the same skills twice.
+
+The root `skills.sh.json` groups skills for the directory when indexed. CLI
+discovery and installation do not by themselves prove directory publication.
+
 ## Included skills
 
 - `mailchannels-email-api`: what the API offers and does not offer, setup,
