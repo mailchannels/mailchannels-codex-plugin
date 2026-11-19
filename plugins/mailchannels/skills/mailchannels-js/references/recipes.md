@@ -62,10 +62,13 @@ const { data, error } = await mailchannels.emails.queue({
 
 ## Avoid duplicate sends
 
-The API takes no idempotency key. Record a send intent with an
-application-chosen unique key before calling the SDK, submit once, and store
-`data.requestId` on that record. After a timeout the outcome is unknown; check
-the delivery events for that recipient before submitting again.
+The API takes no idempotency key, so deduplicate with one unique database
+key per business event: insert a row keyed by, for example,
+`receipt:order-1234` before calling the SDK, submit once, store
+`data.requestId` on that row, and skip the send when a retry finds the key
+with a `requestId`. After a
+timeout the outcome is unknown; check the delivery events for that recipient
+before submitting again.
 
 ## Validate rendering
 

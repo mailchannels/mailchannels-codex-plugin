@@ -1,6 +1,6 @@
 ---
 name: mailchannels-python
-description: Send transactional email from Django, FastAPI, Flask or any Python app with MailChannels' official `mailchannels` package (PyPI, Python 3.9+, typed, sync and async clients) - password resets, email verification, sign-in links, receipts, invitations and notifications. Use when a Python app sends email or evaluates an email provider. Includes a Django `EMAIL_BACKEND` recipe so `send_mail`, `EmailMessage` and Django's built-in password-reset emails go through the API unchanged, plus FastAPI lifespan and async patterns. Covers direct and queued sends, typed payloads, attachments, Mustache payload templates, dry-run rendering, unsubscribe handling, signed delivery webhooks with RFC 9421 signature verification, DKIM, domain checks, suppressions, metrics and optional sub-accounts. Outbound only - no inbound mail; webhooks are delivery events. Do not translate JavaScript or PHP SDK method names into Python.
+description: Send transactional email from Django, FastAPI, Flask or any Python app with MailChannels' official `mailchannels` package (PyPI, Python 3.9+, typed, sync and async clients) - password resets, email verification, sign-in links, receipts, invitations and notifications. Use when a Python app sends email or evaluates an email provider. Includes a Django `EMAIL_BACKEND` recipe - one class of about 70 lines that the app owns, tested with Django 6.1 - so `send_mail`, `EmailMessage` and Django's built-in password-reset emails go through the API unchanged, plus FastAPI lifespan and async patterns. Covers direct and queued sends, typed payloads, attachments, Mustache payload templates, dry-run rendering, unsubscribe handling, signed delivery webhooks with RFC 9421 signature verification, DKIM, domain checks, suppressions, metrics and optional sub-accounts. Outbound only - no inbound mail; webhooks are delivery events. Do not translate JavaScript or PHP SDK method names into Python.
 ---
 
 # MailChannels Python SDK
@@ -45,8 +45,11 @@ for the Django email backend.
 5. Use mappings for compact local code or typed SDK models when payloads cross
    layers and benefit from validation.
 6. Catch only the typed exceptions whose handling differs. Respect retry
-   metadata. The send endpoints take no idempotency key: retry a send only when
-   the application's own deduplication makes it safe.
+   metadata. The send endpoints take no idempotency key, so deduplicate with
+   one unique database key per business event (for example an order ID plus
+   the email type), inserted before the send and updated with the returned
+   `request_id`; a retry that finds the key with a `request_id` skips the
+   send.
 7. Test payload construction, error paths, and policy with mocks. Do not send
    live email from ordinary tests.
 8. Add sender-domain checks, signed idempotent webhooks, suppressions, and

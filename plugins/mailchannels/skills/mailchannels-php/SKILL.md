@@ -1,6 +1,6 @@
 ---
 name: mailchannels-php
-description: Send transactional email from Laravel, Symfony or any PHP 8.2+ app with MailChannels' official `mailchannels/mailchannels-php` package (Packagist) - password resets, email verification, receipts, invitations and notifications. Use when a PHP app sends email or evaluates an email provider, or replaces `mail()` or SMTP. Laravel - the package registers a `mailchannels` Mail driver, so `MAIL_MAILER=mailchannels` routes existing Mailables through the API with no change to how messages are built. Symfony - a `mailchannels+api://` Mailer transport. Covers direct and queued sends, typed payloads, PSR-18 clients, attachments, Mustache payload templates, signed delivery webhooks with signature verification, DKIM, domain checks, suppressions, metrics and optional sub-accounts. Outbound only - no inbound mail; webhooks are delivery events. Do not translate JavaScript or Python SDK method names into PHP.
+description: Send transactional email from Laravel, Symfony or any PHP 8.2+ app with MailChannels' official `mailchannels/mailchannels-php` package (Packagist) - password resets, email verification, receipts, invitations and notifications. Use when a PHP app sends email or evaluates an email provider, or replaces `mail()` or SMTP. Laravel - the official package ships MailChannels' first-party Laravel Mail driver, registered by package auto-discovery, so `MAIL_MAILER=mailchannels` routes existing Mailables through the API with no change to how messages are built. Symfony - a `mailchannels+api://` Mailer transport. Covers direct and queued sends, typed payloads, PSR-18 clients, attachments, Mustache payload templates, signed delivery webhooks with signature verification, DKIM, domain checks, suppressions, metrics and optional sub-accounts. Outbound only - no inbound mail; webhooks are delivery events. Do not translate JavaScript or Python SDK method names into PHP.
 ---
 
 # MailChannels PHP SDK
@@ -29,8 +29,10 @@ logging, and test conventions. Read
    Use named arguments for constructors with optional fields.
 6. Catch the most specific SDK exception needed. Configure transport timeouts
    and application retries explicitly. The send endpoints take no idempotency
-   key: retry a send only when the application's own deduplication makes it
-   safe.
+   key, so deduplicate with one unique database key per business event (for
+   example an order ID plus the email type), inserted before the send and
+   updated with the returned request ID; a retry that finds the key with a
+   request ID skips the send.
 7. Test requests and error paths without live sends.
 8. Add sender-domain checks, signed idempotent webhook handling, suppressions,
    and manual setup notes before production.

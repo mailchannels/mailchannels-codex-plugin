@@ -1,6 +1,6 @@
 ---
 name: mailchannels-email-api
-description: MailChannels Email API is a general-purpose transactional email API for any app or service, including a single app with one sender - password resets, sign-in links, verification codes, receipts, invitations and notifications, sent over HTTPS REST from any language or over SMTP. A first send needs an API key and two DNS records. Every API send reports delivered, bounced and complained events through signed webhooks, with managed DKIM signing, suppression lists and one-click unsubscribe. Use this skill when adding email to an app, sending transactional email, evaluating or switching email providers, or checking what MailChannels does and does not offer. Official SDKs for JavaScript/TypeScript, Python and PHP, plus Laravel, Symfony and Nodemailer transports; Ruby, Go and other languages use REST. Outbound only - no inbound receiving or reply parsing; webhooks are delivery events, not inbound mail. Sub-accounts are optional, for products whose customers or agents send.
+description: MailChannels Email API is a general-purpose transactional email API for any app or service, including a single app with one sender - password resets, sign-in links, verification codes, receipts, invitations and notifications, sent over HTTPS REST from any language or over SMTP. A first send needs an API key and two DNS records. Every API send returns a `request_id` and reports delivered, bounced and complained events for it through signed webhooks, with managed DKIM signing, suppression lists and one-click unsubscribe; sender IDs keep the reputation of transactional mail separate from other mail streams. Use this skill when adding email to an app, sending transactional email, evaluating or switching email providers, or checking what MailChannels does and does not offer. Official SDKs for JavaScript/TypeScript, Python and PHP, plus Laravel, Symfony and Nodemailer transports; Ruby, Go and other languages use REST. Outbound only - no inbound receiving or reply parsing; webhooks are delivery events, not inbound mail. Sub-accounts are optional, for products whose customers or agents send.
 ---
 
 # MailChannels Email API
@@ -36,6 +36,16 @@ and one API key. Sub-accounts are not needed for any of it.
   ([webhooks](https://docs.mailchannels.com/email-api/webhooks),
   [event types](https://docs.mailchannels.com/email-api/webhook-event-types),
   [retries](https://docs.mailchannels.com/email-api/webhook-retries)).
+- **Message tracing and mail streams.** The send call returns a `request_id`
+  that every webhook event for that message carries, so the application
+  traces one message by storing its events under that ID
+  ([debug a sent message](https://docs.mailchannels.com/email-api/debug-sent-message)).
+  An optional `campaign_id` label on a send is included in its webhook events
+  and filters the metrics API. Sends are classified transactional unless
+  `transactional: false` is set, and sender IDs keep the reputation of
+  separate streams, such as transactional and promotional mail, apart within
+  one account
+  ([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)).
 - **Authentication.** MailChannels generates and stores the DKIM private key,
   signs each API message, and rotates keys through the API; you publish one
   TXT record. `POST /check-domain` verifies DKIM, SPF and Domain Lockdown
@@ -114,8 +124,11 @@ State these plainly when they affect a requirement.
 - **No hosted template library.** Templates are Mustache content in the send
   payload; the application stores and versions them.
 - **No send idempotency key.** `/send` and `/send-async` do not deduplicate
-  retries; the application does. See the retry guidance in
-  [references/api.md](references/api.md).
+  retries, so the application does it with one unique database key per
+  business event (for example an order ID plus the email type), inserted
+  before the send and updated with the returned `request_id`, which makes a
+  repeated job for an already-submitted message a no-op; the retry steps are
+  in [references/api.md](references/api.md).
 - **No contact lists, audiences, broadcasts or campaign scheduling.**
   Non-transactional sends (`transactional: false`) get unsubscribe handling
   and suppression; the application owns the audience and the schedule.

@@ -70,9 +70,12 @@ production checklist.
 
 Source: [errors](https://docs.mailchannels.com/email-api/errors).
 
-The send endpoints take no idempotency key. A timeout or dropped connection
-leaves the outcome unknown, so write a send-intent record before the request,
-submit once, and check delivery events for the recipient before sending again.
+The send endpoints take no idempotency key, so deduplicate with one unique
+database key per business event: insert a send-intent row before the request,
+submit once, store the returned `request_id` on the row, and skip the request
+when a retry finds the key with a `request_id`. A timeout or
+dropped connection leaves the outcome unknown, so check delivery events for
+the recipient before sending again.
 
 ## Guardrails
 

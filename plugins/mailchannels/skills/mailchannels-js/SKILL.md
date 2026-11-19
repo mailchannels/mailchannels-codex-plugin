@@ -1,6 +1,6 @@
 ---
 name: mailchannels-js
-description: Send transactional email from Node.js, Next.js, Express, NestJS, Remix or any server-side JavaScript or TypeScript app with MailChannels' official, typed `mailchannels-sdk` (npm, Node.js 20+) - password resets, sign-in links, verification codes, receipts, invitations and notifications. Use when a server-side JS or TS app sends email or evaluates an email provider, or already uses Nodemailer and can switch to the MailChannels transport without changing how messages are built. Covers direct and queued sends, HTML rendered by any template engine, attachments, Mustache payload templates, dry-run rendering, a local simulator for tests, signed delivery webhooks with a built-in signature verifier, unsubscribe handling, DKIM, domain checks, suppressions, metrics and optional sub-accounts. Server-side only, not for browser code. Outbound only - no inbound mail; webhooks are delivery events.
+description: Send transactional email from Node.js, Next.js, Express, NestJS, Remix or any server-side JavaScript or TypeScript app with MailChannels' official, typed `mailchannels-sdk` (npm, Node.js 20+) - password resets, sign-in links, verification codes, receipts, invitations and notifications. Use when a server-side JS or TS app sends email or evaluates an email provider, or already uses Nodemailer and can switch to the MailChannels transport without changing how messages are built. Covers direct and queued sends, HTML rendered by React Email, MJML or any other template engine, attachments, Mustache payload templates, dry-run rendering, a local simulator for tests, signed delivery webhooks with a built-in signature verifier, unsubscribe handling, DKIM, domain checks, suppressions, metrics and optional sub-accounts. Server-side only, not for browser code. Outbound only - no inbound mail; webhooks are delivery events.
 ---
 
 # MailChannels JavaScript SDK
@@ -46,8 +46,10 @@ not an option, call the REST API with `fetch`; see `mailchannels-rest`.
 5. Reuse the project's queue, logging, retry, and observability conventions.
    Treat API acceptance as submission, not delivery.
 6. Handle the SDK's `{ data, error }` result explicitly. The send endpoints
-   take no idempotency key: retry only when the application's own
-   deduplication makes a retry safe.
+   take no idempotency key, so deduplicate with one unique database key per
+   business event (for example an order ID plus the email type), inserted
+   before the send and updated with the returned `requestId`; a retry that
+   finds the key with a `requestId` skips the send.
 7. Add unit and integration tests with the local simulator or mocked transport.
    Do not send live email from ordinary test suites.
 8. Before production, add sender-domain checks, signed webhook processing,

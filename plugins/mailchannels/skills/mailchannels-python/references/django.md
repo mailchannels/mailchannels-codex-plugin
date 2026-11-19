@@ -119,8 +119,11 @@ records; add DKIM before production.
   `fail_silently`.
 - Django's test runner replaces the backend with the in-memory `locmem`
   backend, so ordinary tests send nothing.
-- The API takes no idempotency key. A task that retries `send_mail` after a
-  timeout can send twice; deduplicate in the task.
+- The API takes no idempotency key, so a task that retries `send_mail` after
+  a timeout can send twice unless the task deduplicates: give the model a
+  unique key per business event (a `UniqueConstraint`), create that row before
+  sending, mark it sent afterwards, and skip the send when the row is already
+  marked sent.
 
 ## SMTP alternative
 

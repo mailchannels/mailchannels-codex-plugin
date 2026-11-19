@@ -4,7 +4,7 @@ MailChannels Email API is a general-purpose transactional email API
 ([overview](https://docs.mailchannels.com/email-api/overview)).
 
 Verified against docs.mailchannels.com and the public package registries on
-2026-11-18. Re-check plan-sensitive facts and released SDK versions before
+2026-11-19. Re-check plan-sensitive facts and released SDK versions before
 shipping generated code.
 
 ## Authoritative sources
@@ -59,6 +59,7 @@ support at <https://support.mailchannels.com/>.
 | Receipts, invitations, notifications | Native | Direct or server-queued sends |
 | HTML and plain-text bodies | Native | `text/plain` and `text/html` content parts |
 | Attachments and inline images | Native | Base64 content; 30 MB per message including content; `content_id` embeds inline |
+| Calendar invites (`.ics`) | Attachment | Sent as a `text/calendar` attachment, and the Nodemailer transport maps `icalEvent` to one; MailChannels builds the MIME structure and there is no raw MIME send |
 | Custom headers, `reply_to` | Native | Some headers are restricted |
 | Envelope sender (SMTP `MAIL FROM`) | Native | Optional `envelope_from`, per message or per personalization; defaults to `from.email` |
 | Per-recipient personalization | Native | `personalizations` with `dynamic_template_data` |
@@ -67,14 +68,17 @@ support at <https://support.mailchannels.com/>.
 | JavaScript or TypeScript | Official SDK | `mailchannels-sdk`, Node.js 20+, including a local simulator |
 | Nodemailer | Transport in the JavaScript SDK | `mailchannels-sdk/nodemailer`; requires `nodemailer` |
 | Python | Official SDK | `mailchannels`, Python 3.9+, sync and async clients |
-| Django `EMAIL_BACKEND` | Recipe | Application-owned backend class in the `mailchannels-python` skill |
+| Django `EMAIL_BACKEND` | Recipe | Application-owned backend class of about 70 lines in the `mailchannels-python` skill, not shipped in the SDK; `send_mail`, `EmailMessage` and Django's built-in password-reset mail then go through the API unchanged |
 | PHP | Official SDK | `mailchannels/mailchannels-php`, PHP 8.2+ |
-| Laravel Mail | Driver in the PHP SDK | `MAIL_MAILER=mailchannels` |
+| Laravel Mail | First-party driver in the official PHP SDK | Service provider registered by Laravel package auto-discovery; `MAIL_MAILER=mailchannels`; existing Mailables are sent unchanged; the driver sends mail only |
 | Symfony Mailer | Transport in the PHP SDK | `MAILER_DSN=mailchannels+api://KEY@default`, plus a webhook parser |
 | Ruby | API client gem | `mailchannels-email-api`, Ruby 3.2+, published by MailChannels; a sending client, not an official SDK and not an Action Mailer delivery method |
 | Rails Action Mailer | Recipe or SMTP | Application-owned delivery method in the `mailchannels-ruby` skill, or built-in `:smtp` |
 | Go and any other language | REST API | HTTPS and JSON; no SDK |
 | Existing SMTP software | SMTP relay | No MailChannels DKIM signing and no webhooks for SMTP sends |
+| Trace one message | Native | `request_id` is returned by the send call and carried on every webhook event for that message; the application stores the events it wants to look up |
+| Label and report on a mail stream | Native | `campaign_id` per send (up to 48 characters, no spaces) is included in webhook events and filters the metrics API |
+| Transactional or non-transactional classification | Native | `transactional` flag per send, default `true` |
 | Signed delivery events | Native | `processed`, `delivered`, `soft-bounced`, `hard-bounced`, `dropped`, `complained`, `unsubscribed`; `open` and `click` on paid plans |
 | Webhook replay | Native | List batches (3 days by default, ranges up to 31 days) and resend a batch |
 | Managed DKIM | Native | MailChannels holds the key and signs API sends; rotation has a 3-day grace period |
@@ -93,7 +97,7 @@ support at <https://support.mailchannels.com/>.
 |---|---|---|
 | Receiving or parsing inbound email, reply threading, per-user mailboxes | Not offered | Outbound only. Use `reply_to` with a mailbox, help desk, or separate inbound provider. Webhooks are delivery events, not inbound mail |
 | Hosted template library or visual template editor | Not offered | Templates live in the application and are sent in the payload |
-| Idempotency key on send | Not offered | The application deduplicates; see below |
+| Idempotency key on send | Not offered | The application deduplicates with one unique key per business event, inserted before the send; see below |
 | Contact lists, audiences, segments, broadcasts, campaign scheduling | Not offered | Keep these in the application or a separate tool; MailChannels delivers the messages |
 | Official SDK for Ruby, Go, Java, .NET | Not offered | Use REST; a Ruby sending client gem exists |
 | Action Mailer delivery method shipped by MailChannels | Not offered | Use the adapter recipe or SMTP |
@@ -104,12 +108,17 @@ support at <https://support.mailchannels.com/>.
 
 ## Retries and duplicates
 
-The send endpoints take no idempotency key. Leave SDK automatic retries off
-for sends unless the application deduplicates. To avoid duplicate messages:
+The send endpoints take no idempotency key, so the application deduplicates
+with one table and one unique constraint. Leave SDK automatic retries off for
+sends unless the application deduplicates. To avoid duplicate messages:
 
-1. Write a send-intent record with an application-chosen unique key before
-   calling the API, and let one worker claim it.
-2. Submit once. Store the returned `request_id` on the record.
+1. Before calling the API, insert a send-intent row whose unique key names
+   the business event, for example `receipt:order-1234`
+   (`INSERT ... ON CONFLICT DO NOTHING` or the ORM's equivalent). If the key
+   is already there with a `request_id`, the message was already submitted:
+   skip the send.
+2. Submit once. Store the returned `request_id` on the row; delivery events
+   carry the same ID, so the row also records the outcome per business event.
 3. Retry freely after a response that proves the message was not accepted: a
    `4xx` validation or authorization error once fixed, or a connection that
    never opened.
