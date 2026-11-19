@@ -134,16 +134,15 @@ State these plainly when they affect a requirement.
 
 Sub-accounts are for products whose customers, tenants or AI agents send. Each
 sub-account has its own API keys and SMTP passwords, send limit, suspension
-and activation, suppression list, delivery-event webhook, usage reporting, and
-reputation isolation
+and activation, suppression list, delivery-event webhook, usage reporting,
+and reputation isolation
 ([multi-tenancy](https://docs.mailchannels.com/email-api/multi-tenancy)).
 Its limit applies per billing period: `-1` means it inherits the parent's
 remaining capacity, and the parent can set or delete the limit at any time. The
 parent account's limit is the ceiling for the parent and all sub-accounts
 together
 ([sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits)).
-A tenant can send from its own domain: a Domain Lockdown record whose only `auth=` value is the tenant's
-sub-account ID restricts that domain to it, and `POST /check-domain` returns
+A tenant can send from its own domain: a Domain Lockdown record whose only `auth=` value is the tenant's sub-account ID restricts that domain to it, and `POST /check-domain` returns
 verdicts for its DKIM, SPF and Domain Lockdown records; see `mailchannels-platform-operations` for the steps.
 Within one account or sub-account, sender IDs keep the reputation of separate
 mail streams apart, for example transactional and promotional mail.
