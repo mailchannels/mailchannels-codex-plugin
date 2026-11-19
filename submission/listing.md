@@ -24,9 +24,14 @@ notifications. Send over REST or SMTP with official JavaScript, Python and PHP
 SDKs, or keep Laravel Mail, Symfony Mailer or Nodemailer and switch the
 transport. Every API send reports delivery, bounce and complaint events through
 signed webhooks, with managed DKIM, suppressions and one-click unsubscribe.
-Optional sub-accounts give each customer or agent its own credentials and
-limits when they send through your product. Outbound only; free developer plan
-for development and testing.
+Optional sub-accounts give each customer, tenant or agent that sends through
+your product its own API keys, send limit, suspension and activation through
+the API, suppression list, delivery webhooks, usage reporting and reputation
+isolation, and each tenant can send from its own domain: a Domain Lockdown
+record restricts the domain to that tenant's sub-account, DKIM keys are created
+per domain through the API, and the domain-check API returns pass or fail
+verdicts for the domain's DKIM, SPF and Domain Lockdown records. Outbound only;
+free developer plan for development and testing.
 
 ## Starter prompts
 

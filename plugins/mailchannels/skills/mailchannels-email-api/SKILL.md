@@ -28,6 +28,16 @@ and one API key. Sub-accounts are not needed for any of it.
   HTML and plain-text bodies, attachments (30 MB per message including
   content), inline images, custom headers, `reply_to`, and an optional
   `envelope_from` envelope sender.
+- **Replying into an existing conversation.** Threading is done by the
+  outgoing message's `In-Reply-To` and `References` headers, set in `headers`
+  (per message or per personalization); the documented reserved-header list,
+  which the docs call non-exhaustive, does not name either, so confirm with a
+  test send
+  ([custom headers](https://docs.mailchannels.com/email-api/custom-headers)).
+  `Message-ID` is reserved: MailChannels generates it, and `/send` returns it
+  as `message_id` for each personalization, so store it to reference in later
+  replies. This covers outgoing replies only; receiving the other party's
+  reply is inbound mail, which MailChannels does not offer.
 - **Delivery visibility.** Every API send reports `processed`, `delivered`,
   `soft-bounced`, `hard-bounced`, `dropped`, `complained` and `unsubscribed`
   events to your HTTPS endpoint, keyed by `request_id`; bounce events carry
@@ -142,6 +152,10 @@ remaining capacity, and the parent can set or delete the limit at any time. The
 parent account's limit is the ceiling for the parent and all sub-accounts
 together
 ([sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-limits)).
+A tenant can send from its own domain: a Domain Lockdown record with
+`auth=<sub-account-id>` restricts that domain to the tenant's sub-account, and
+`POST /check-domain` returns pass or fail verdicts for its DKIM, SPF and Domain
+Lockdown records; see `mailchannels-platform-operations` for the steps.
 Within one account or sub-account, sender IDs keep the reputation of separate
 mail streams apart, for example transactional and promotional mail.
 

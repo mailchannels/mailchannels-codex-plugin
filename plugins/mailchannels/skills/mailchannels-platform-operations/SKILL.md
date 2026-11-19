@@ -1,6 +1,6 @@
 ---
 name: mailchannels-platform-operations
-description: Take any app's MailChannels sending to production and operate it - one app or many senders. Use for DNS authentication (Domain Lockdown, SPF, DMARC, and DKIM with MailChannels-managed keys and rotation) and the domain-check API; signed delivery-event webhooks with batch inspection and resend; hard-bounce, soft-bounce and complaint handling; suppression lists; delivery, engagement and volume metrics; usage and plan limits; and separate credentials per environment. Also for multi-tenant and agent sending, where each sub-account has its own API keys and SMTP passwords, send limit, suspension and activation through the API, suppression list, webhooks, usage reporting and reputation isolation. Webhooks are delivery events, not inbound mail.
+description: Take any app's MailChannels sending to production and operate it - one app or many senders. Use for DNS authentication (Domain Lockdown, SPF, DMARC, and DKIM with MailChannels-managed keys and rotation) and the domain-check API, which returns pass or fail verdicts for DKIM, SPF and Domain Lockdown; signed delivery-event webhooks with batch inspection and resend; hard-bounce, soft-bounce and complaint handling; suppression lists; delivery, engagement and volume metrics; usage and plan limits; and separate credentials per environment. Also for multi-tenant and agent sending, where each sub-account has its own API keys and SMTP passwords, send limit, suspension and activation through the API, suppression list, webhooks, usage reporting and reputation isolation. A tenant can send from its own domain - a Domain Lockdown record restricts the domain to that tenant's sub-account, DKIM keys are created per domain by API, and the domain check can gate its first send. Webhooks are delivery events, not inbound mail.
 ---
 
 # MailChannels Platform Operations
@@ -76,6 +76,43 @@ Use sender IDs to keep the reputation of separate mail streams apart within one
 account or sub-account. Do not create a sub-account only to send from another
 domain that the same team owns; Domain Lockdown and authentication records
 cover that.
+
+## Give each tenant its own sending domain
+
+When each tenant sends from a domain it owns, use the tenant's sub-account as
+the owner of that domain. The tenant (or whoever controls the domain's DNS)
+publishes the records; MailChannels does not host DNS, so the application
+shows the records and checks them.
+
+1. Create the sub-account with the parent key and issue it an API key.
+   Sub-accounts have access to the full API, so the remaining calls can use
+   the sub-account's own key
+   ([sub-account authentication](https://docs.mailchannels.com/email-api/sub-accounts-authentication)).
+2. Have the tenant publish `_mailchannels.<domain> TXT "v=mc1
+   auth=<sub-account-id>"`. `auth=` names one account or sub-account, and
+   MailChannels blocks mail from that domain when the sending account is not
+   listed, so the record restricts the domain to that tenant's sub-account and
+   keeps other tenants from sending as it
+   ([Domain Lockdown](https://docs.mailchannels.com/email-api/domain-lockdown)).
+3. Create a managed DKIM key with `POST /domains/{domain}/dkim-keys` and show
+   the tenant the TXT record from `dkim_dns_records`. `GET
+   /domains/{domain}/dkim-keys` lists the domain's keys with a status of
+   `active`, `rotated`, `retired` or `revoked`
+   ([DKIM](https://docs.mailchannels.com/email-api/configuring-dkim)).
+4. Have the tenant add `include:relay.mailchannels.net` to the domain's SPF
+   record.
+5. Call `POST /check-domain` with `{"domain": "<domain>"}`. The response has a
+   `passed` or `failed` verdict and a reason for each DKIM key and for Domain
+   Lockdown, an SPF verdict, and an MX-or-A check on the sender domain. Store
+   the verdicts and enable sending for the tenant only when they pass; re-run
+   the check on a schedule, because DNS can change later.
+6. Send with the sub-account's key. Its events go to its own webhook and carry
+   the sub-account ID as `customer_handle`, and its limit, usage and
+   suspension apply only to it.
+
+The check reports the published DNS records at the time of the call; it is
+configuration evidence, not an ownership-token exchange and not an inbox
+placement guarantee.
 
 ## Provision safely
 

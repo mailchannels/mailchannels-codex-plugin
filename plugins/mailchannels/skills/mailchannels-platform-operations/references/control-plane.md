@@ -46,6 +46,32 @@ and [sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-li
   sub-accounts together.
 - Sub-accounts cannot create other sub-accounts.
 
+## Tenant domain facts
+
+Sources: [Domain Lockdown](https://docs.mailchannels.com/email-api/domain-lockdown),
+[DKIM](https://docs.mailchannels.com/email-api/configuring-dkim) and the
+[API reference](https://docs.mailchannels.com/email-api/api-reference/openapi.yaml).
+
+- A Domain Lockdown record lists the accounts allowed to send from a domain.
+  `auth=` takes an account ID or a sub-account ID, a record can hold several
+  `auth=` fields, and mail from an account that is not listed is blocked. A
+  record naming only one sub-account therefore restricts the domain to it.
+- Every sending domain needs its own record, including each subdomain.
+- Messages sent by a sub-account show the sub-account ID in the
+  `X-MailChannels-Auth-Id` header.
+- `POST /domains/{domain}/dkim-keys` creates a managed key pair and returns
+  the DNS record to publish; `GET` lists keys filtered by selector or status
+  (`active`, `rotated`, `retired`, `revoked`); `PATCH` changes a key's status
+  and `POST .../rotate` rotates it.
+- `POST /check-domain` returns `check_results` with `dkim` (one `passed` or
+  `failed` verdict per key, with `dkim_key_status` for managed keys),
+  `domain_lockdown` (`passed` or `failed`), `spf` (verdict plus the record
+  found) and `sender_domain` (MX or A record present). `envelope_from_domain`
+  checks SPF and Domain Lockdown against a different envelope domain.
+- MailChannels does not host DNS: the records are published by whoever
+  controls the domain, and the documented verification is this check of the
+  published records, not an ownership-token exchange.
+
 Express provider limits in the billing period documented by the product.
 Implement daily, hourly, per-action, or per-recipient budgets in the
 application when those are required.
