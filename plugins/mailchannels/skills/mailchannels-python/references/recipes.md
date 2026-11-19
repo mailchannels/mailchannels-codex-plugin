@@ -103,6 +103,11 @@ mailchannels.Emails.queue(message)
 - `Webhooks`: enroll, validate, inspect and resend delivery batches, obtain
   signing keys, and verify signatures.
 
+## Django
+
+See [django.md](django.md) for an `EMAIL_BACKEND` class that routes
+`django.core.mail` through the SDK.
+
 ## Webhooks and errors
 
 Preserve the raw request body. Resolve the signing key ID, obtain or cache the

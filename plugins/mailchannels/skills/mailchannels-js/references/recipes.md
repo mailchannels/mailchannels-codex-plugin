@@ -1,8 +1,9 @@
 # MailChannels JavaScript recipes
 
 Verified against `mailchannels-sdk` 1.3.0 and its public documentation on
-2026-07-24. The package states compatibility with Email API 1.5.0. Confirm the
-installed version before relying on a recently added method.
+2026-07-24; method and resource names re-checked against the type declarations
+published in 1.8.0 on 2026-11-18. Confirm the installed version before relying
+on a recently added method.
 
 ## Install and configure
 
@@ -41,6 +42,30 @@ console.log(data.requestId)
 Prefer `emails.queue()` for web requests, workers, or higher throughput. Use
 `emails.send()` when immediate per-personalization results or a dry-run preview
 are required. A successful result is still not final delivery.
+
+## Send HTML rendered in the app
+
+`html` is a string. Render it with whatever the project already uses and pass
+the result; nothing about the template engine is specific to MailChannels.
+
+```ts
+// `renderedHtml` and `renderedText` come from the project's own renderer,
+// for example React Email's render(), MJML, or Handlebars.
+const { data, error } = await mailchannels.emails.queue({
+  from: 'Example <notifications@example.com>',
+  to: 'recipient@example.net',
+  subject: 'Reset your password',
+  html: renderedHtml,
+  text: renderedText
+})
+```
+
+## Avoid duplicate sends
+
+The API takes no idempotency key. Record a send intent with an
+application-chosen unique key before calling the SDK, submit once, and store
+`data.requestId` on that record. After a timeout the outcome is unknown; check
+the delivery events for that recipient before submitting again.
 
 ## Validate rendering
 
@@ -97,11 +122,12 @@ tests.
 
 ## Resource map
 
-- `emails`: direct and queued sends, attachments, payload Mustache templates,
-  unsubscribe metadata, custom headers, and tracking.
-- `dkim`: hosted DKIM key lifecycle.
-- `checkDomain`: DKIM, SPF, sender-domain, and Domain Lockdown checks.
-- `customTrackingDomains`: tracking-domain lifecycle and verification.
+- `emails`: `send` and `queue` (also available as `sendAsync`), attachments,
+  payload Mustache templates, unsubscribe metadata, custom headers, and
+  tracking.
+- `domains`: `check` for DKIM, SPF, sender-domain, and Domain Lockdown
+  checks; `domains.dkim` for the hosted DKIM key lifecycle;
+  `domains.customTracking` for tracking-domain lifecycle and verification.
 - `subAccounts`: lifecycle, API keys, SMTP passwords, limits, and usage.
 - `metrics`: engagement, performance, recipient behavior, volume, sender, and
   usage views.
@@ -109,5 +135,5 @@ tests.
 - `webhooks`: enroll, validate, inspect or resend batches, obtain signing keys,
   and verify events.
 
-Inspect the installed TypeScript declarations before generating less common
-calls.
+Releases before 1.8.0 may expose some of these under different names. Inspect
+the installed TypeScript declarations before generating less common calls.

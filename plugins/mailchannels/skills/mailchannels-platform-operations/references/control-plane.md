@@ -1,7 +1,7 @@
 # MailChannels control-plane reference
 
 Verified against <https://docs.mailchannels.com/email-api/overview> and the
-public package documentation on 2026-11-06. Re-check the parent account's plan
+public package documentation on 2026-11-18. Re-check the parent account's plan
 limit before provisioning.
 
 ## Responsibility boundaries
@@ -26,6 +26,13 @@ and [sub-account limits](https://docs.mailchannels.com/email-api/sub-accounts-li
 - Each sub-account has its own suppression list and delivery-event webhook,
   managed with the sub-account's own API key. The parent does not receive
   copies of its events.
+- A recipient on the parent's suppression list is not suppressed for a
+  sub-account unless also on that sub-account's list. To suppress a recipient
+  everywhere, create the entry with the parent's API key and
+  `add_to_sub_accounts` set to `true`
+  ([managing suppressions](https://docs.mailchannels.com/email-api/suppression-api-actions)).
+- Webhook events carry `customer_handle`, the account or sub-account ID, so
+  one receiver can serve several sub-accounts.
 - Each sub-account has reputation isolation; sender IDs add reputation
   boundaries between mail streams within an account or sub-account.
 - The parent can suspend a sub-account, which stops its sending, and activate

@@ -1,6 +1,6 @@
 ---
 name: mailchannels-safe-automation
-description: Build controlled MailChannels sending for AI agents, autonomous workflows, user-generated content, or customer-managed senders. Use when a semi-trusted actor can choose recipients, sender identity, content, or volume and the system needs authorization, consent checks, budgets, approvals, audit trails, suppressions, signed delivery feedback, per-sender credentials, or independent suspension. Pairs MailChannels sub-accounts, which give each agent or customer its own keys, limits, suspension, suppressions, webhooks and reputation, with the application controls around them.
+description: Build controlled MailChannels sending for AI agents, autonomous workflows, user-generated content, or customer-managed senders. Use when a semi-trusted actor can choose recipients, sender identity, content, or volume and the system needs authorization, consent checks, budgets, approvals, audit trails, suppressions, signed delivery feedback, per-sender credentials, or independent suspension. Pairs MailChannels sub-accounts, which give each agent or customer its own keys, limits, suspension, suppressions, webhooks and reputation, with the application controls around them. Outbound only - an agent that must read replies needs a separate inbound provider; webhooks are delivery events.
 ---
 
 # Safe Automated Email with MailChannels
@@ -42,6 +42,17 @@ them
 
 If a deployment chooses not to use sub-accounts, preserve the same
 application-level identity, budget, suspension, and audit boundaries.
+
+## Know the boundary
+
+MailChannels Email API sends mail and reports what happened to it. It does not
+receive mail. An agent that needs to read replies, own a mailbox, or thread a
+conversation needs a separate inbound provider or mailbox; set `reply_to` to
+that address. Signed webhooks carry delivery events (`delivered`, bounces,
+complaints, unsubscribes) for mail the agent sent, never reply content
+([inbound email and replies](https://docs.mailchannels.com/email-api/inbound-email-replies)).
+The send endpoints take no idempotency key, so the immutable send intent above
+is what prevents an agent's retry from sending twice.
 
 ## Fail closed
 

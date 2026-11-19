@@ -1,0 +1,7 @@
+interface:
+  display_name: "MailChannels REST API"
+  short_description: "Send app email over HTTPS from any language"
+  default_prompt: "Use $mailchannels-rest to send this app's email through the MailChannels REST API."
+
+policy:
+  allow_implicit_invocation: true

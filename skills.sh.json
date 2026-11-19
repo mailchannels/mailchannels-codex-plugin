@@ -4,19 +4,22 @@
   "groupings": [
     {
       "title": "Send email from your app",
-      "description": "Password resets, sign-in links, receipts, invitations and notifications over REST or SMTP, with the official JavaScript, Python and PHP SDKs and Laravel, Symfony and Nodemailer transports.",
+      "description": "Password resets, sign-in links, receipts, invitations and notifications over REST or SMTP, with the official JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports, Django and Rails recipes, and plain HTTPS for every other language.",
       "skills": [
         "mailchannels-email-api",
         "mailchannels-js",
         "mailchannels-python",
-        "mailchannels-php"
+        "mailchannels-php",
+        "mailchannels-ruby",
+        "mailchannels-rest"
       ]
     },
     {
-      "title": "Operate and scale",
-      "description": "Domain authentication, signed webhooks and suppressions, and sub-accounts when your users or agents send through your app.",
+      "title": "Operate, migrate and scale",
+      "description": "Domain authentication, signed delivery webhooks and suppressions, migration from another provider, and optional sub-accounts when your users or agents send through your app.",
       "skills": [
         "mailchannels-platform-operations",
+        "mailchannels-migration",
         "mailchannels-safe-automation"
       ]
     }

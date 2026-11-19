@@ -5,7 +5,7 @@
 - Name: MailChannels
 - Developer: MailChannels Corporation
 - Category: Developer Tools
-- Version: 1.1.0
+- Version: 1.1.1
 - Short description: Send email from any app with MailChannels
 - Website: <https://www.mailchannels.com/>
 - Documentation: <https://docs.mailchannels.com/email-api/overview>
@@ -18,11 +18,15 @@ This project is supported by the MailChannels team on a best-effort basis. File 
 
 ## Long description
 
-Send email from any app with MailChannels Email API: password resets, sign-in
-links, receipts, invitations and notifications. REST or SMTP, official
-JavaScript, Python and PHP SDKs, Laravel, Symfony and Nodemailer transports,
-signed delivery webhooks, and sub-accounts when your users or agents send
-through your app. Free to start.
+MailChannels Email API is a transactional email API for any application:
+password resets, sign-in links, verification codes, receipts, invitations and
+notifications. Send over REST or SMTP with official JavaScript, Python and PHP
+SDKs, or keep Laravel Mail, Symfony Mailer or Nodemailer and switch the
+transport. Every API send reports delivery, bounce and complaint events through
+signed webhooks, with managed DKIM, suppressions and one-click unsubscribe.
+Optional sub-accounts give each customer or agent its own credentials and
+limits when they send through your product. Outbound only; free developer plan
+for development and testing.
 
 ## Starter prompts
 

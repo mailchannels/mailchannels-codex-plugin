@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.1.1",
   "positive_tests": [
     {
       "id": "provider-evaluation",
@@ -76,6 +76,38 @@
         "mailchannels-python"
       ],
       "expected_behavior": "Install async extra, own clients with async context/shutdown, preserve per-tenant credentials and exception propagation, distinguish async I/O from provider queue; do not automatically retry uncertain submissions."
+    },
+    {
+      "id": "rails-action-mailer",
+      "prompt": "This Rails app sends password resets and receipts through Action Mailer. Send them through MailChannels and keep the existing mailers.",
+      "expected_skills": [
+        "mailchannels-ruby"
+      ],
+      "expected_behavior": "State that the official SDKs are JavaScript, Python and PHP; use the application-owned Action Mailer delivery method with the mailchannels-email-api gem, or built-in SMTP while stating that SMTP sends are not DKIM-signed by MailChannels and produce no webhooks."
+    },
+    {
+      "id": "django-email-backend",
+      "prompt": "Route this Django project's send_mail and password-reset emails through MailChannels.",
+      "expected_skills": [
+        "mailchannels-python"
+      ],
+      "expected_behavior": "Add the application-owned EMAIL_BACKEND class that calls the official mailchannels package, keep the API key in settings from the environment, and note that the SDK itself does not ship a Django backend."
+    },
+    {
+      "id": "go-rest-send",
+      "prompt": "Send order confirmation emails from this Go service with MailChannels.",
+      "expected_skills": [
+        "mailchannels-rest"
+      ],
+      "expected_behavior": "Call POST /send-async with net/http and the X-Api-Key header, store request_id, state that there is no Go SDK, and deduplicate retries in the application because the API has no idempotency key."
+    },
+    {
+      "id": "provider-migration",
+      "prompt": "We send transactional email with SendGrid today. Plan a move to MailChannels and list anything that will not carry over.",
+      "expected_skills": [
+        "mailchannels-migration"
+      ],
+      "expected_behavior": "Map the send call, domains, templates, webhooks, suppressions and subusers using the documented migration guide, and list inbound mail, hosted templates and marketing lists as features with no MailChannels equivalent."
     }
   ],
   "negative_tests": [
@@ -98,6 +130,16 @@
       "id": "unrelated-email-client",
       "prompt": "Fix the CSS alignment of the message list in our desktop email client.",
       "expected_behavior": "Do not invoke a MailChannels delivery skill."
+    },
+    {
+      "id": "webhooks-are-not-inbound",
+      "prompt": "Use MailChannels webhooks to receive customer replies and thread them into our support inbox.",
+      "expected_behavior": "State that MailChannels webhooks are delivery events only and carry no reply content; route replies with reply_to to a mailbox, help desk or separate inbound provider."
+    },
+    {
+      "id": "idempotency-key-required",
+      "prompt": "Our retry policy requires the email provider to deduplicate sends with an idempotency key. Confirm MailChannels supports this.",
+      "expected_behavior": "State that the MailChannels send endpoints take no idempotency key and that deduplication must be done by the application."
     }
   ]
 }
