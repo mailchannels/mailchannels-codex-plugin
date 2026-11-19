@@ -18,15 +18,23 @@ This project is supported by the MailChannels team on a best-effort basis. File 
 
 ## Long description
 
-MailChannels Email API is a transactional email API for any application:
+MailChannels Email API is a transactional email API for applications sending
 password resets, sign-in links, verification codes, receipts, invitations and
 notifications. Send over REST or SMTP with official JavaScript, Python and PHP
 SDKs, or keep Laravel Mail, Symfony Mailer or Nodemailer and switch the
-transport. Every API send reports delivery, bounce and complaint events through
-signed webhooks, with managed DKIM, suppressions and one-click unsubscribe.
-Optional sub-accounts give each customer or agent its own credentials and
-limits when they send through your product. Outbound only; free developer plan
-for development and testing.
+transport. API sends support attachments, `reply_to`, and RFC 5322 custom headers
+subject to reserved-header restrictions, and report delivery, bounce and
+complaint events through signed webhooks. Authenticate sending domains with SPF and managed DKIM. Domain Lockdown can
+authorize a specific account or sub-account per domain, and `POST /check-domain`
+inspects each domain's DKIM, SPF and Domain Lockdown status. Optional sub-accounts let
+products provision each customer or agent with separate API keys, SMTP
+passwords, send limits, suspension/activation, suppressions, webhooks, usage
+reporting and reputation isolation. Outbound only: no inbound receiving or reply
+parsing, and webhooks are delivery events, not inbound mail. Templates are
+Mustache in the send payload; there is no hosted template library. Sends take no
+idempotency key. SMTP sends are not DKIM-signed by MailChannels and produce no
+webhooks; framework transports send mail only. The free developer plan sends only
+to verified users on the account until a payment method is added.
 
 ## Starter prompts
 
