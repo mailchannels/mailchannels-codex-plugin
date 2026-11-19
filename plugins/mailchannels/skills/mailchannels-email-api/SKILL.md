@@ -92,10 +92,10 @@ and keep the API key in a secret store.
 
 Plans ([pricing and limits](https://docs.mailchannels.com/email-api/billing/pricing)):
 
-- The free developer plan sends up to 100 emails per day at no cost.
-  Until a payment method is added to the account, it delivers only to verified
-  users on the account, over both API and SMTP; other recipients are rejected
-  with `550 5.7.1`. Open and click tracking need a paid plan.
+- The free developer plan (100 emails per day) delivers only to verified users
+  on the account until a payment method is added, over both API and SMTP; other
+  recipients are rejected with `550 5.7.1`. Open and click tracking need a paid
+  plan.
 - Paid plans are fixed monthly volume tiers starting at 10,000 emails per
   month. Each recipient counts as one send. Sending pauses at the plan limit
   until the next cycle or an upgrade; messages already accepted are still
