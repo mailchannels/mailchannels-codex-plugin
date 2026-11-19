@@ -18,15 +18,17 @@ This project is supported by the MailChannels team on a best-effort basis. File 
 
 ## Long description
 
-MailChannels Email API is a transactional email API for any application:
-password resets, sign-in links, verification codes, receipts, invitations and
-notifications. Send over REST or SMTP with official JavaScript, Python and PHP
-SDKs, or keep Laravel Mail, Symfony Mailer or Nodemailer and switch the
-transport. Every API send reports delivery, bounce and complaint events through
-signed webhooks, with managed DKIM, suppressions and one-click unsubscribe.
-Optional sub-accounts give each customer or agent its own credentials and
-limits when they send through your product. Outbound only; free developer plan
-for development and testing.
+MailChannels Email API is a transactional email API for any application: password
+resets, sign-in links, verification codes, receipts, invitations and notifications. Send
+over REST or SMTP with official JavaScript, Python and PHP SDKs, or keep Laravel Mail,
+Symfony Mailer or Nodemailer and switch the transport. REST payloads support HTML/text
+content, attachments and per-recipient personalization. The asynchronous REST send
+returns a request ID, and signed delivery webhooks carry that ID through processed,
+delivered, bounce and complaint events; metrics report delivery and volume by time range
+and campaign. Sender IDs can separate reputation for distinct mail streams within an
+account or sub-account. Optional sub-accounts give each customer or agent its own
+credentials and limits when they send through your product. Outbound only; free
+developer plan for development and testing.
 
 ## Starter prompts
 

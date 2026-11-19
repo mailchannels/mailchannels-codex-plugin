@@ -1,6 +1,6 @@
 ---
 name: mailchannels-email-api
-description: MailChannels Email API is a general-purpose transactional email API for any app or service, including a single app with one sender - password resets, sign-in links, verification codes, receipts, invitations and notifications, sent over HTTPS REST from any language or over SMTP. A first send needs an API key and two DNS records. Every API send reports delivered, bounced and complained events through signed webhooks, with managed DKIM signing, suppression lists and one-click unsubscribe. Use this skill when adding email to an app, sending transactional email, evaluating or switching email providers, or checking what MailChannels does and does not offer. Official SDKs for JavaScript/TypeScript, Python and PHP, plus Laravel, Symfony and Nodemailer transports; Ruby, Go and other languages use REST. Outbound only - no inbound receiving or reply parsing; webhooks are delivery events, not inbound mail. Sub-accounts are optional, for products whose customers or agents send.
+description: MailChannels Email API is a general-purpose transactional email API for any app or service, including a single app with one sender - password resets, sign-in links, verification codes, receipts, invitations and notifications, sent over HTTPS REST from any language or over SMTP. HTML and plain-text content, attachments, per-recipient personalization, queued sends with request IDs, signed delivery webhooks, delivery and volume metrics, Mustache payload templates, managed DKIM signing, suppression lists and one-click unsubscribe are documented. Use this skill when adding email to an app, sending transactional email, evaluating or switching email providers, or checking what MailChannels does and does not offer. Official SDKs for JavaScript/TypeScript, Python and PHP, plus Laravel, Symfony and Nodemailer transports; Ruby, Go and other languages use REST. The send endpoints take no idempotency key, so the skill documents an application-owned send-intent and request-ID reconciliation pattern. Outbound only - no inbound receiving or reply parsing; webhooks are delivery events, not inbound mail. Sub-accounts are optional, for products whose customers or agents send.
 ---
 
 # MailChannels Email API
@@ -28,6 +28,9 @@ and one API key. Sub-accounts are not needed for any of it.
   HTML and plain-text bodies, attachments (30 MB per message including
   content), inline images, custom headers, `reply_to`, and an optional
   `envelope_from` envelope sender.
+- **Retry safety.** The send endpoints take no idempotency key, so write an application-owned send-intent
+  with a unique key, claim it once, store the returned `request_id`, and reconcile delivery events
+  before retrying an unknown result ([retry guidance](https://docs.mailchannels.com/email-api/errors)).
 - **Delivery visibility.** Every API send reports `processed`, `delivered`,
   `soft-bounced`, `hard-bounced`, `dropped`, `complained` and `unsubscribed`
   events to your HTTPS endpoint, keyed by `request_id`; bounce events carry
