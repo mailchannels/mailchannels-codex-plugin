@@ -5,7 +5,7 @@
 - Name: MailChannels
 - Developer: MailChannels Corporation
 - Category: Developer Tools
-- Version: 1.1.0
+- Version: 1.1.1
 - Short description: Send email from any app with MailChannels
 - Website: <https://www.mailchannels.com/>
 - Documentation: <https://docs.mailchannels.com/email-api/overview>
